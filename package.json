@@ -1,7 +1,7 @@
 {
   "name": "weather-app",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "keywords": [
     "weather"
@@ -37,9 +37,11 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-lit": "^1.10.1",
     "eslint-plugin-n": "^16.3.1",
     "eslint-plugin-no-relative-import-paths": "^1.5.3",
     "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-wc": "^2.0.4",
     "gh-pages": "^6.0.0",
     "prettier": "^3.1.0",
     "typescript": "^5.2.2",
