@@ -5,6 +5,7 @@
 > Weather App is made using
 > - **[Lit](https://lit.dev)**
 > - **[TypeScript](https://typescriptlang.org)**
+> - **[W3.CSS](https://w3schools.com/w3css)**
 > - **[Vite](https://vitejs.dev)**
 >
 > fetching and showing weather data.

@@ -1,24 +1,16 @@
-import { LitElement, type TemplateResult, css, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { type TemplateResult, LitElement, css, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+
+const stylesheet = html`<link
+  rel="stylesheet"
+  type="text/css"
+  href="https://w3schools.com/w3css/4/w3.css" />`;
 
 @customElement('lit-main')
 export class LitMain extends LitElement {
-  @property({ type: Number })
-  count = 0;
-
   render(): TemplateResult {
-    return html`
-      <div class="card">
-        <button @click=${this._onClick} part="button">
-          count is ${this.count}
-        </button>
-      </div>
-    `;
+    return html` ${stylesheet} `;
   }
-
-  private _onClick = (): void => {
-    this.count++;
-  };
 
   static styles = css``;
 }
@@ -28,3 +20,8 @@ declare global {
     'lit-main': LitMain;
   }
 }
+
+// Easter Egg
+console.log(
+  'Patrolling the Mojave almost makes you wish for a nuclear winter.'
+);
