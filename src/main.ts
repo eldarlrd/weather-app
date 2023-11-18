@@ -1,15 +1,24 @@
-import { type TemplateResult, LitElement, css, html } from 'lit';
+import { type TemplateResult, LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-const stylesheet = html`<link
-  rel="stylesheet"
-  type="text/css"
-  href="https://w3schools.com/w3css/4/w3.css" />`;
+import '@/components/controls.ts';
+import '@/components/current.ts';
+import '@/components/weekly.ts';
+import '@/components/footer.ts';
+import { type LitControls } from '@/components/controls.ts';
+import { type LitCurrent } from '@/components/current.ts';
+import { type LitFooter } from '@/components/footer.ts';
+import { type LitWeekly } from '@/components/weekly.ts';
 
 @customElement('lit-main')
-export class LitMain extends LitElement {
+class LitMain extends LitElement {
   render(): TemplateResult {
-    return html` ${stylesheet} `;
+    return html`
+      <lit-controls></lit-controls>
+      <lit-current></lit-current>
+      <lit-weekly></lit-weekly>
+      <lit-footer></lit-footer>
+    `;
   }
 
   static styles = css``;
@@ -18,6 +27,10 @@ export class LitMain extends LitElement {
 declare global {
   interface HTMLElementTagNameMap {
     'lit-main': LitMain;
+    'lit-controls': LitControls;
+    'lit-current': LitCurrent;
+    'lit-weekly': LitWeekly;
+    'lit-footer': LitFooter;
   }
 }
 
