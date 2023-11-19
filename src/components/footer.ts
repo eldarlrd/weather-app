@@ -11,7 +11,6 @@ export class LitFooter extends LitElement {
       <footer class="w3-text-white w3-large w3-padding-32">
         © 2023
         <a
-          class="w3-round-large"
           title="Go to the Source"
           target="_blank"
           type="text/html"
@@ -30,7 +29,7 @@ export class LitFooter extends LitElement {
     }
 
     :focus-visible {
-      outline: 1px solid white;
+      outline: 2px solid white;
     }
 
     :host {
@@ -40,11 +39,14 @@ export class LitFooter extends LitElement {
       font-weight: 400;
     }
 
-    a {
+    footer > a {
+      display: inline-block;
+      border-radius: 2rem;
       text-decoration: none;
-      border: 1px solid transparent;
+      margin-left: 0.25rem;
+      transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
       &:hover {
-        border: 1px solid white;
+        transform: scale(1.05);
       }
     }
   `;
