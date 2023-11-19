@@ -5,10 +5,16 @@ import { stylesheet } from '@/styles.ts';
 
 @customElement('lit-current')
 export class LitCurrent extends LitElement {
-  render(): TemplateResult {
-    return html` ${stylesheet}
-      <main>Current</main>`;
+  protected render(): TemplateResult {
+    return html`
+      ${stylesheet}
+      <main>Current</main>
+    `;
   }
 
-  static styles = css``;
+  static styles = css`
+    ::selection {
+      background-color: #0ea5e9;
+    }
+  `;
 }

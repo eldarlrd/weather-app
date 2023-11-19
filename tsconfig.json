@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "composite": true,
     // Bundler
-    "types": ["vite/client", "vitest", "vitest/globals"],
+    "types": ["vite/client"],
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,

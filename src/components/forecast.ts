@@ -3,12 +3,12 @@ import { customElement } from 'lit/decorators.js';
 
 import { stylesheet } from '@/styles.ts';
 
-@customElement('lit-controls')
-export class LitControls extends LitElement {
+@customElement('lit-forecast')
+export class LitForecast extends LitElement {
   protected render(): TemplateResult {
     return html`
       ${stylesheet}
-      <header>Controls</header>
+      <section>Forecast</section>
     `;
   }
 
