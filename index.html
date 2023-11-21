@@ -28,7 +28,11 @@
       :root {
         min-height: 100svh;
         scroll-behavior: smooth;
-        background: center / cover no-repeat #0ea5e9 url('src/assets/background.avif');
+        --bg-primary: #0ea5e9;
+        --bg-secondary: #80cdf6;
+        --bg-accent: #f9ae00;
+        --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        background: center / cover no-repeat var(--bg-primary) url('src/assets/background.avif');
       }
 
       body {

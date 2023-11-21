@@ -35,7 +35,7 @@ export class LitControls extends LitElement {
 
   static styles = css`
     ::selection {
-      background-color: #0ea5e9;
+      background-color: var(--bg-primary);
     }
 
     header {
@@ -51,9 +51,9 @@ export class LitControls extends LitElement {
         & input {
           border: 0;
           border-radius: 2rem 0 0 2rem;
-          background-color: #80cdf6;
-          outline: 2px solid #80cdf6;
-          transition: outline-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+          background-color: var(--bg-secondary);
+          outline: 2px solid var(--bg-secondary);
+          transition: outline-color var(--transition);
           &:hover,
           &:focus-visible {
             outline: 2px solid white !important;
@@ -68,9 +68,9 @@ export class LitControls extends LitElement {
           user-select: none;
           border-radius: 0 2rem 2rem 0;
           padding: 0.5rem 0.75rem;
-          background-color: #f9ae00;
-          outline: 2px solid #f9ae00;
-          transition: outline-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+          background-color: var(--bg-accent);
+          outline: 2px solid var(--bg-accent);
+          transition: outline-color var(--transition);
           cursor: pointer;
           &:hover,
           &:focus-visible {
@@ -86,7 +86,9 @@ export class LitControls extends LitElement {
           user-select: none;
           border-radius: 2rem;
           padding: 0.5rem 0.75rem;
-          background-color: #80cdf6;
+          background-color: var(--bg-secondary);
+          outline: 2px solid var(--bg-secondary);
+          transition: outline-color var(--transition);
           cursor: pointer;
           &:hover,
           &:focus-visible {

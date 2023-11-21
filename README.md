@@ -6,7 +6,9 @@
 > - **[Lit](https://lit.dev)**
 > - **[TypeScript](https://typescriptlang.org)**
 > - **[W3.CSS](https://w3schools.com/w3css)**
+> - **[date-fns](https://date-fns.org)**
 > - **[Vite](https://vitejs.dev)**
+> - **[OpenWeather](https://openweathermap.org/api)**
 >
 > fetching and showing weather data.
 

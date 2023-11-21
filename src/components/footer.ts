@@ -24,10 +24,6 @@ export class LitFooter extends LitElement {
   }
 
   static styles = css`
-    ::selection {
-      background-color: #0ea5e9;
-    }
-
     :focus-visible {
       outline: 2px solid white;
     }
@@ -44,7 +40,7 @@ export class LitFooter extends LitElement {
       border-radius: 2rem;
       text-decoration: none;
       margin-left: 0.25rem;
-      transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform var(--transition);
       &:hover {
         transform: scale(1.05);
       }
