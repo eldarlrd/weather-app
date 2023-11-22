@@ -1,10 +1,19 @@
 import { type TemplateResult, LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 
+import { requestCurrWeather, searchLocation } from '@/api.ts';
 import { stylesheet } from '@/styles.ts';
+
+interface Coordinates {
+  lat: number;
+  lon: number;
+}
 
 @customElement('lit-controls')
 export class LitControls extends LitElement {
+  @property({ type: String })
+  location = '';
+
   protected render(): TemplateResult {
     return html`
       ${stylesheet}
@@ -14,17 +23,26 @@ export class LitControls extends LitElement {
           alt="A sun behind a cloud"
           width="128"
           height="128" />
-        <span>
+
+        <form method="get">
           <input
             title=""
             type="text"
             name="search"
+            @input=${(e: Event): string =>
+              (this.location = (e.target as HTMLInputElement).value)}
+            value=${this.location}
             placeholder="Search"
             class="w3-text-white w3-padding" />
-          <button type="button" title="Search" class="w3-text-white">
+          <button
+            type="submit"
+            title="Search"
+            @click=${(e: Event): Promise<void> => this._onClick(e)}
+            class="w3-text-white">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
-        </span>
+        </form>
+
         <div>
           <button type="button" class="w3-text-white">°C, m/s</button>
           <button type="button" class="w3-text-white">°F, mph</button>
@@ -32,6 +50,18 @@ export class LitControls extends LitElement {
       </header>
     `;
   }
+
+  private _onClick = async (e: Event): Promise<void> => {
+    e.preventDefault();
+    const coordinatesArr = await searchLocation(this.location);
+    if (coordinatesArr)
+      console.log(
+        requestCurrWeather(
+          (coordinatesArr as Coordinates[])[0].lat,
+          (coordinatesArr as Coordinates[])[0].lon
+        )
+      );
+  };
 
   static styles = css`
     ::selection {
@@ -45,7 +75,7 @@ export class LitControls extends LitElement {
       justify-content: flex-start;
       font-weight: 400;
       gap: 1rem;
-      & span {
+      & form {
         display: flex;
         gap: 0.25rem;
         & input {
