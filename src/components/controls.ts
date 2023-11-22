@@ -1,18 +1,16 @@
 import { type TemplateResult, LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { requestCurrWeather, searchLocation } from '@/api.ts';
+import { type LitMain } from '@/main.ts';
 import { stylesheet } from '@/styles.ts';
 
-interface Coordinates {
-  lat: number;
-  lon: number;
-}
-
+/**
+ * @prop apiCall
+ */
 @customElement('lit-controls')
 export class LitControls extends LitElement {
   @property({ type: String })
-  location = '';
+  locationData = '';
 
   protected render(): TemplateResult {
     return html`
@@ -29,15 +27,20 @@ export class LitControls extends LitElement {
             title=""
             type="text"
             name="search"
+            minlength="1"
             @input=${(e: Event): string =>
-              (this.location = (e.target as HTMLInputElement).value)}
-            value=${this.location}
+              (this.locationData = (e.target as HTMLInputElement).value)}
+            value=${this.locationData}
             placeholder="Search"
             class="w3-text-white w3-padding" />
           <button
             type="submit"
             title="Search"
-            @click=${(e: Event): Promise<void> => this._onClick(e)}
+            @click=${(e: Event): Promise<void> | undefined => {
+              e.preventDefault();
+              if (this.locationData !== '')
+                return (this as unknown as LitMain).apiCall(this.locationData);
+            }}
             class="w3-text-white">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
@@ -50,18 +53,6 @@ export class LitControls extends LitElement {
       </header>
     `;
   }
-
-  private _onClick = async (e: Event): Promise<void> => {
-    e.preventDefault();
-    const coordinatesArr = await searchLocation(this.location);
-    if (coordinatesArr)
-      console.log(
-        requestCurrWeather(
-          (coordinatesArr as Coordinates[])[0].lat,
-          (coordinatesArr as Coordinates[])[0].lon
-        )
-      );
-  };
 
   static styles = css`
     ::selection {

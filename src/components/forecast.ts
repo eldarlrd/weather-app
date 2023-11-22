@@ -8,7 +8,7 @@ export class LitForecast extends LitElement {
   protected render(): TemplateResult {
     return html`
       ${stylesheet}
-      <section>Forecast</section>
+      <section></section>
     `;
   }
 

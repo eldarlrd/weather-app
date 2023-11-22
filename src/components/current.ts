@@ -10,6 +10,7 @@ export class LitCurrent extends LitElement {
       ${stylesheet}
       <main class="w3-text-white w3-container">
         <h1 class="w3-xxlarge w3-center">Baku, Azerbaijan</h1>
+        <slot name="cloudiness"></slot>
       </main>
     `;
   }
