@@ -1,7 +1,7 @@
 const API_KEY = 'e17c2086750c8698ff3eb48625a77d14';
 
 // OpenWeather API Current weather data
-const requestCurrWeather = async <T>(
+const requestCurrLocation = async <T>(
   lat: number,
   lon: number
 ): Promise<T | undefined> => {
@@ -22,15 +22,15 @@ const requestCurrWeather = async <T>(
 const searchLocation = async <T>(location: string): Promise<T | undefined> => {
   try {
     const response = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${API_KEY}`,
+      `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${API_KEY}`,
       { mode: 'cors' }
     );
-    const locationArr = (await response.json()) as Promise<T>;
-    return locationArr;
+    const weather = (await response.json()) as Promise<T>;
+    return weather;
   } catch (error: unknown) {
     if (error instanceof Error)
       console.log({ name: error.name, message: error.message });
   }
 };
 
-export { requestCurrWeather, searchLocation };
+export { requestCurrLocation, searchLocation };

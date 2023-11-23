@@ -12,7 +12,7 @@ export class LitForecast extends LitElement {
     `;
   }
 
-  static styles = css`
+  public static styles = css`
     ::selection {
       background-color: #0ea5e9;
     }

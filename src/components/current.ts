@@ -8,21 +8,15 @@ export class LitCurrent extends LitElement {
   protected render(): TemplateResult {
     return html`
       ${stylesheet}
-      <main class="w3-text-white w3-container">
-        <h1 class="w3-xxlarge w3-center">Baku, Azerbaijan</h1>
-        <slot name="cloudiness"></slot>
+      <main class="w3-text-white w3-container w3-padding-16">
+        <slot></slot>
       </main>
     `;
   }
 
-  static styles = css`
-    ::selection {
-      background-color: #0ea5e9;
-    }
-
-    main > h1 {
-      font-family: 'Signika', sans-serif;
-      word-break: break-all;
+  public static styles = css`
+    :host {
+      width: 100%;
     }
   `;
 }

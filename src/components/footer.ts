@@ -23,7 +23,7 @@ export class LitFooter extends LitElement {
     `;
   }
 
-  static styles = css`
+  public static styles = css`
     :focus-visible {
       outline: 2px solid white;
     }
@@ -41,6 +41,7 @@ export class LitFooter extends LitElement {
       text-decoration: none;
       margin-left: 0.25rem;
       transition: transform var(--transition);
+
       &:hover {
         transform: scale(1.05);
       }

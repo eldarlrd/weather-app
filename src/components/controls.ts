@@ -1,5 +1,5 @@
-import { type TemplateResult, LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { type TemplateResult, LitElement, html, css, nothing } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
 
 import { type LitMain } from '@/main.ts';
 import { stylesheet } from '@/styles.ts';
@@ -11,6 +11,9 @@ import { stylesheet } from '@/styles.ts';
 export class LitControls extends LitElement {
   @property({ type: String })
   locationData = '';
+
+  @query('input')
+  _input!: HTMLInputElement;
 
   protected render(): TemplateResult {
     return html`
@@ -32,8 +35,24 @@ export class LitControls extends LitElement {
               (this.locationData = (e.target as HTMLInputElement).value)}
             value=${this.locationData}
             placeholder="Search"
-            class="w3-text-white w3-padding" />
+            class="w3-text-white" />
+          ${this.locationData
+            ? html`<button
+                id="clear"
+                type="button"
+                title="Clear"
+                tabindex="-1"
+                @click=${(): void => {
+                  this.locationData = '';
+                  this._input.value = '';
+                }}
+                class="w3-text-white">
+                <i class="fa-solid fa-x"></i>
+              </button>`
+            : nothing}
+
           <button
+            id="submit"
             type="submit"
             title="Search"
             @click=${(e: Event): Promise<void> | undefined => {
@@ -54,7 +73,7 @@ export class LitControls extends LitElement {
     `;
   }
 
-  static styles = css`
+  public static styles = css`
     ::selection {
       background-color: var(--bg-primary);
     }
@@ -69,22 +88,47 @@ export class LitControls extends LitElement {
       & form {
         display: flex;
         gap: 0.25rem;
+        border-radius: 2rem;
+
+        &:hover #clear,
+        &:focus-within #clear {
+          visibility: visible;
+        }
+
         & input {
           border: 0;
           border-radius: 2rem 0 0 2rem;
           background-color: var(--bg-secondary);
           outline: 2px solid var(--bg-secondary);
           transition: outline-color var(--transition);
+          padding: 0.5rem 2rem 0.5rem 1rem;
+
           &:hover,
           &:focus-visible {
             outline: 2px solid white !important;
           }
+
           &::placeholder {
             color: white;
             opacity: 0.5;
           }
         }
-        & button {
+
+        & #clear {
+          visibility: hidden;
+          position: relative;
+          border: 0;
+          user-select: none;
+          border-radius: 2rem;
+          padding: 0.25rem;
+          background-color: transparent;
+          outline: none;
+          cursor: pointer;
+          margin-left: -1.5rem;
+          right: 6px;
+        }
+
+        & #submit {
           border: 0;
           user-select: none;
           border-radius: 0 2rem 2rem 0;
@@ -93,15 +137,18 @@ export class LitControls extends LitElement {
           outline: 2px solid var(--bg-accent);
           transition: outline-color var(--transition);
           cursor: pointer;
+
           &:hover,
           &:focus-visible {
             outline: 2px solid white !important;
           }
         }
       }
+
       & div {
         display: flex;
         gap: 0.75rem;
+
         & button {
           border: 0;
           user-select: none;
@@ -111,6 +158,7 @@ export class LitControls extends LitElement {
           outline: 2px solid var(--bg-secondary);
           transition: outline-color var(--transition);
           cursor: pointer;
+
           &:hover,
           &:focus-visible {
             outline: 2px solid white !important;
