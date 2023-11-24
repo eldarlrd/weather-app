@@ -18,5 +18,12 @@ export class LitCurrent extends LitElement {
     :host {
       width: 100%;
     }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
   `;
 }

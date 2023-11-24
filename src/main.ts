@@ -27,7 +27,7 @@ import '@/components/current.ts';
 import '@/components/forecast.ts';
 import '@/components/footer.ts';
 
-import { searchLocation } from '@/api.ts';
+import { requestCurrLocation, searchLocation } from '@/api.ts';
 import { type LitControls } from '@/components/controls.ts';
 import { type LitCurrent } from '@/components/current.ts';
 import { type LitFooter } from '@/components/footer.ts';
@@ -51,26 +51,43 @@ interface CurrentWeatherAPI {
 }
 
 // d for Day, n for Night
-// const WEATHER_ICONS: Record<string, string> = {
-//   '01d': 'fa-sun',
-//   '01n': 'fa-moon',
-//   '02d': 'fa-cloud-sun',
-//   '02n': 'fa-cloud-moon',
-//   '03d': 'fa-cloud',
-//   '03n': 'fa-cloud',
-//   '04d': 'fa-cloud',
-//   '04n': 'fa-cloud',
-//   '09d': 'fa-cloud-showers-heavy',
-//   '09n': 'fa-cloud-showers-heavy',
-//   '10d': 'fa-cloud-sun-rain',
-//   '10n': 'fa-cloud-moon-rain',
-//   '11d': 'fa-cloud-bolt',
-//   '11n': 'fa-cloud-bolt',
-//   '13d': 'fa-snowflake',
-//   '13n': 'fa-snowflake',
-//   '50d': 'fa-smog',
-//   '50n': 'fa-smog'
-// };
+const WEATHER_ICONS: Record<string, string> = {
+  '01d': 'fa-sun',
+  '01n': 'fa-moon',
+  '02d': 'fa-cloud-sun',
+  '02n': 'fa-cloud-moon',
+  '03d': 'fa-cloud',
+  '03n': 'fa-cloud',
+  '04d': 'fa-cloud',
+  '04n': 'fa-cloud',
+  '09d': 'fa-cloud-showers-heavy',
+  '09n': 'fa-cloud-showers-heavy',
+  '10d': 'fa-cloud-sun-rain',
+  '10n': 'fa-cloud-moon-rain',
+  '11d': 'fa-cloud-bolt',
+  '11n': 'fa-cloud-bolt',
+  '13d': 'fa-snowflake',
+  '13n': 'fa-snowflake',
+  '50d': 'fa-smog',
+  '50n': 'fa-smog'
+};
+
+// Beaufort Scale
+const WIND_FEEL_ARRAY = [
+  { maxSpeed: 0.3, description: 'Calm' },
+  { maxSpeed: 1.7, description: 'Light winds' },
+  { maxSpeed: 3.3, description: 'Light breeze' },
+  { maxSpeed: 5.6, description: 'Gentle breeze' },
+  { maxSpeed: 8.1, description: 'Moderate breeze' },
+  { maxSpeed: 10.8, description: 'Fresh breeze' },
+  { maxSpeed: 13.9, description: 'Strong breeze' },
+  { maxSpeed: 17.2, description: 'Moderate gale' },
+  { maxSpeed: 20.8, description: 'Fresh gale' },
+  { maxSpeed: 24.7, description: 'Strong gale' },
+  { maxSpeed: 28.6, description: 'Whole gale' },
+  { maxSpeed: 33.1, description: 'Storm' },
+  { maxSpeed: Infinity, description: 'Hurricane' }
+];
 
 @customElement('lit-main')
 export class LitMain extends LitElement {
@@ -98,6 +115,8 @@ export class LitMain extends LitElement {
   accessor city!: string; // City name
   @property({ type: String })
   accessor country!: string; // Country name
+  @property({ type: String })
+  accessor windFeelText!: string; // e.g. Calm
 
   @property({ attribute: false })
   accessor sunrise!: Date; // h
@@ -106,90 +125,325 @@ export class LitMain extends LitElement {
   @property({ attribute: false })
   accessor currTime!: Date; // h
 
+  @property({ type: Boolean })
+  accessor isMetric = localStorage.isMetric === 'true' ? true : false;
+  @property({ type: Boolean })
+  accessor isLoading!: boolean;
+  @property({ type: Boolean })
+  accessor isFound!: boolean;
+
+  // Measurement System
+  @property({ type: String })
+  accessor hourFormat!: string;
+  @property({ type: String })
+  accessor temperatureFormat!: string;
+  @property({ type: String })
+  accessor speedFormat!: string;
+  @property({ type: String })
+  accessor distanceFormat!: string;
+
   protected render(): TemplateResult {
     return html`
       ${stylesheet}
-      <lit-controls .apiCall=${this.apiCall}></lit-controls>
+      <lit-controls
+        .apiCall=${this.apiCall}
+        .isMetric=${this.isMetric}
+        .switchSystem=${(e: boolean): void => {
+          this.switchSystem(e);
+        }}></lit-controls>
+      ${this.isLoading && this.isFound
+        ? html`<svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <style>
+              .circle {
+                transform-origin: center;
+                animation: loading 0.75s infinite linear;
+              }
+              @keyframes loading {
+                100% {
+                  transform: rotate(360deg);
+                }
+              }
+            </style>
+            <path
+              d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"
+              class="circle"
+              fill="white" />
+          </svg>`
+        : !this.isFound
+          ? html`<h2 class="w3-center w3-text-white">Location not found</h2>`
+          : nothing}
+
       <lit-current>
         <h1 class="w3-xxlarge w3-center">
-          Baku, Azerbaijan
           ${this.city}${this.country ? ', ' + this.country : nothing}
         </h1>
         <h2 class="w3-xlarge w3-center w3-text-light-gray">
           ${this.city
-            ? format(this.currTime, "eee., d MMM. y | 'at' HH:MM")
+            ? format(this.currTime, "eee., d MMM. y | 'at' ") +
+              format(this.currTime, this.hourFormat)
             : nothing}
-          Thu., Nov. 23, 2023
         </h2>
 
-        <div id="currentWeather">
-          <span>
-            <i class="fa-solid fa-cloud-bolt"></i>
-            <p>${this.mainTemp ? this.mainTemp - 273 + ' °C' : '14 °C'}</p>
-          </span>
-          <div>
-            <h3 class="w3-center">
-              ${this.weatherDesc
-                ? this.weatherDesc.charAt(0).toUpperCase() +
-                  this.weatherDesc.slice(1)
-                : 'Broken clouds'}
-            </h3>
-            <p>
-              Feels like
-              ${this.mainFeel ? this.mainFeel - 273 + ' °C' : '14 °C'}
-            </p>
+        <span id="weather-container">
+          <div id="current-weather">
+            <span>
+              <i class="fa-solid ${WEATHER_ICONS[this.weatherIcon]}"></i>
+              <p>
+                ${this.mainTemp !== undefined && !isNaN(this.mainTemp)
+                  ? Math.round(
+                      this.isMetric
+                        ? this.mainTemp - 273
+                        : (this.mainTemp - 273) * 1.8 + 32
+                    ) + this.temperatureFormat
+                  : nothing}
+              </p>
+            </span>
+            <div>
+              <h3>
+                ${this.weatherDesc
+                  ? this.weatherDesc.charAt(0).toUpperCase() +
+                    this.weatherDesc.slice(1)
+                  : nothing}
+              </h3>
+              <h4 class="w3-text-light-gray">
+                ${this.mainFeel !== undefined && !isNaN(this.mainFeel)
+                  ? 'Feels like ' +
+                    Math.round(
+                      this.isMetric
+                        ? this.mainFeel - 273
+                        : (this.mainFeel - 273) * 1.8 + 32
+                    ) +
+                    this.temperatureFormat
+                  : nothing}
+              </h4>
+              <h4 class="w3-text-light-gray">
+                ${this.windSpeed !== undefined ? this.windFeelText : nothing}
+              </h4>
+            </div>
           </div>
-        </div>
 
-        <p>humid: ${this.mainHumidity}</p>
-        <p>vis: ${this.visibility}</p>
-        <p>windspeed: ${this.windSpeed}</p>
-        <p>winddeg: ${this.windDeg}</p>
-        <p>sunrise: ${this.sunrise}</p>
-        <p>sunset: ${this.sunset}</p>
-        <p>clouds: ${this.clouds}</p>
+          <div id="detailed-weather">
+            <span>
+              <h4 class="w3-text-light-gray">
+                ${this.windSpeed !== undefined ? 'Wind' : nothing}
+              </h4>
+              <h3>
+                ${this.windDeg !== undefined
+                  ? html`<i
+                      style="rotate: ${this.windDeg.toString() + 'deg'}"
+                      class="fa-solid fa-arrow-down"></i>`
+                  : nothing}
+                ${this.windSpeed !== undefined
+                  ? Math.round(
+                      this.isMetric ? this.windSpeed : this.windSpeed * 2.24
+                    ) + this.speedFormat
+                  : nothing}
+              </h3>
+            </span>
+
+            <span>
+              <h4 class="w3-text-light-gray">
+                ${this.mainHumidity !== undefined ? 'Humidity' : nothing}
+              </h4>
+              <h3>
+                ${this.mainHumidity !== undefined
+                  ? this.mainHumidity + '%'
+                  : nothing}
+              </h3>
+            </span>
+
+            <span>
+              <h4 class="w3-text-light-gray">
+                ${this.visibility !== undefined && !isNaN(this.visibility)
+                  ? 'Visibility'
+                  : nothing}
+              </h4>
+              <h3>
+                ${this.visibility !== undefined && !isNaN(this.visibility)
+                  ? Math.round(
+                      this.isMetric ? this.visibility : this.visibility * 0.62
+                    ) + this.distanceFormat
+                  : nothing}
+              </h3>
+            </span>
+
+            <span>
+              <h4 class="w3-text-light-gray">
+                ${this.clouds !== undefined ? 'Cloudiness' : nothing}
+              </h4>
+              <h3>
+                ${this.clouds !== undefined ? this.clouds + '%' : nothing}
+              </h3>
+            </span>
+
+            <span>
+              <h4 class="w3-text-light-gray">
+                ${this.sunrise ? 'Sunrise' : nothing}
+              </h4>
+              <h3>
+                ${this.sunrise
+                  ? format(this.sunrise, this.hourFormat)
+                  : nothing}
+              </h3>
+            </span>
+
+            <span>
+              <h4 class="w3-text-light-gray">
+                ${this.sunset ? 'Sunset' : nothing}
+              </h4>
+              <h3>
+                ${this.sunset ? format(this.sunset, this.hourFormat) : nothing}
+              </h3>
+            </span>
+          </div>
+        </span>
+        <!-- Rain Chance -->
+        <!-- Moon Phase -->
       </lit-current>
       <lit-forecast></lit-forecast>
       <lit-footer></lit-footer>
     `;
   }
 
-  public apiCall = async (locationData: string): Promise<void> => {
+  public apiCall = async (
+    locationData?: string,
+    lat?: number,
+    lon?: number
+  ): Promise<void> => {
     const regionNamesInEnglish = new Intl.DisplayNames(['en'], {
       type: 'region'
     });
 
-    const response = await searchLocation(locationData);
-    if (!response) return;
+    // Reset State
+    this.clouds = undefined as unknown as number;
+    this.mainTemp = undefined as unknown as number;
+    this.mainFeel = undefined as unknown as number;
+    this.mainHumidity = undefined as unknown as number;
+    this.visibility = undefined as unknown as number;
+    this.windSpeed = undefined as unknown as number;
+    this.windDeg = undefined as unknown as number;
+
+    this.weatherDesc = undefined as unknown as string;
+    this.weatherIcon = undefined as unknown as string;
+    this.city = undefined as unknown as string;
+    this.country = undefined as unknown as string;
+    this.windFeelText = undefined as unknown as string;
+
+    this.sunrise = undefined as unknown as Date;
+    this.sunset = undefined as unknown as Date;
+    this.currTime = undefined as unknown as Date;
+
+    this.isLoading = true;
+    this.isFound = true;
+
+    let response: unknown;
+    if (lat && lon) response = await requestCurrLocation(lat, lon);
+    else if (locationData) response = await searchLocation(locationData);
+    if (!response) {
+      this.isFound = false;
+      return;
+    }
     const { clouds, weather, main, visibility, wind, sys, timezone, name } =
       response as CurrentWeatherAPI;
-    this.clouds = clouds.all;
-    this.mainTemp = Math.round(main.temp);
-    this.mainFeel = Math.round(main.feels_like);
-    this.mainHumidity = main.humidity;
+    this.clouds = clouds?.all;
+    this.mainTemp = Math.round(main?.temp);
+    this.mainFeel = Math.round(main?.feels_like);
+    this.mainHumidity = main?.humidity;
     this.visibility = visibility / 1000;
-    this.windSpeed = wind.speed;
-    this.windDeg = wind.deg;
+    this.windSpeed = wind?.speed;
+    this.windDeg = wind?.deg;
 
-    this.weatherDesc = weather[0].description;
-    this.weatherIcon = weather[0].icon;
+    if (weather) {
+      this.weatherDesc = weather[0].description;
+      this.weatherIcon = weather[0].icon;
+    }
 
     this.city = name;
-    const country = regionNamesInEnglish.of(sys.country);
+    let country: string | undefined;
+    if (sys) country = regionNamesInEnglish.of(sys.country);
     if (country) this.country = country;
-    this.sunrise = addSeconds(
-      fromUnixTime(sys.sunrise),
-      timezone + new Date().getTimezoneOffset() * 60
-    );
-    this.sunset = addSeconds(
-      fromUnixTime(sys.sunset),
-      timezone + new Date().getTimezoneOffset() * 60
-    );
-    this.currTime = addSeconds(
-      new Date(),
-      timezone + new Date().getTimezoneOffset() * 60
-    );
+    if (timezone !== undefined) {
+      this.sunrise = addSeconds(
+        fromUnixTime(sys?.sunrise),
+        timezone + new Date().getTimezoneOffset() * 60
+      );
+      this.sunset = addSeconds(
+        fromUnixTime(sys?.sunset),
+        timezone + new Date().getTimezoneOffset() * 60
+      );
+      this.currTime = addSeconds(
+        new Date(),
+        timezone + new Date().getTimezoneOffset() * 60
+      );
+    }
+    this.windFeel();
+    this.isLoading = false;
   };
+
+  public windFeel = (): void => {
+    for (const arr of WIND_FEEL_ARRAY)
+      if (this.windSpeed < arr.maxSpeed) {
+        this.windFeelText = arr.description;
+        return;
+      }
+  };
+
+  public firstUpdated(): void {
+    if (localStorage.isMetric) {
+      const storedMetric = localStorage.getItem('isMetric');
+      this.isMetric = storedMetric
+        ? (JSON.parse(storedMetric) as boolean)
+        : true;
+    }
+
+    this.switchFormat(this.isMetric);
+
+    if (navigator.geolocation) {
+      this.getCurrentPosition()
+        .then((position: GeolocationPosition) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          return this.apiCall('', lat, lon);
+        })
+        .catch((error: GeolocationPositionError) => {
+          console.log(`${error.message} -> Setting a default location.`);
+          return this.apiCall('Baku');
+        });
+    }
+  }
+
+  private getCurrentPosition(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+  }
+
+  public switchSystem(isMetric: boolean): void {
+    localStorage.setItem('isMetric', JSON.stringify(isMetric));
+    this.switchFormat(isMetric);
+  }
+
+  public switchFormat(isMetric: boolean): void {
+    if (isMetric) {
+      this.isMetric = isMetric;
+      this.hourFormat = 'H:MM';
+      this.temperatureFormat = ' °C';
+      this.speedFormat = ' m/s';
+      this.distanceFormat = ' km';
+      this.requestUpdate('isMetric', true);
+    } else {
+      this.isMetric = isMetric;
+      this.hourFormat = 'h:mm a';
+      this.temperatureFormat = ' °F';
+      this.speedFormat = ' mph';
+      this.distanceFormat = ' mi';
+      this.requestUpdate('isMetric', true);
+    }
+  }
 
   public static styles = css`
     ::selection {
@@ -208,14 +462,35 @@ export class LitMain extends LitElement {
 
     h1,
     h2,
-    h3 {
+    h3,
+    h4 {
       font-family: 'Signika', sans-serif;
       word-break: break-word;
     }
 
-    #currentWeather {
+    svg {
+      padding-top: 1.25rem;
+      z-index: -1;
+      scale: 4;
+    }
+
+    #weather-container {
       display: flex;
       flex-direction: column;
+      align-items: center;
+    }
+
+    @media (min-width: 64rem) {
+      #weather-container {
+        flex-direction: row;
+        gap: 2rem;
+      }
+    }
+
+    #current-weather {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       margin-top: -1rem;
 
       & span {
@@ -226,6 +501,39 @@ export class LitMain extends LitElement {
         font-size: 4rem;
         line-height: 1rem;
         margin-bottom: -1.5rem;
+      }
+
+      & div {
+        display: inherit;
+        flex-direction: column;
+        justify-content: center;
+        width: fit-content;
+
+        & h4 {
+          margin-top: -0.5rem;
+        }
+      }
+    }
+
+    #detailed-weather {
+      margin-top: 0.5rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, auto);
+      width: fit-content;
+      gap: 1rem 4rem;
+
+      & span {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        & h3 {
+          margin-top: -2px;
+          display: inherit;
+          align-items: center;
+          gap: 0.5rem;
+        }
       }
     }
   `;

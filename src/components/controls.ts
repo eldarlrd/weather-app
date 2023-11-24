@@ -6,11 +6,17 @@ import { stylesheet } from '@/styles.ts';
 
 /**
  * @prop apiCall
+ * @prop switchSystem
+ * @prop switchFormat
+ * @prop isMetric
  */
 @customElement('lit-controls')
 export class LitControls extends LitElement {
   @property({ type: String })
-  locationData = '';
+  accessor locationData = '';
+
+  @property({ type: Boolean })
+  accessor isMetricActive = localStorage.isMetric === 'true' ? true : false;
 
   @query('input')
   _input!: HTMLInputElement;
@@ -66,8 +72,32 @@ export class LitControls extends LitElement {
         </form>
 
         <div>
-          <button type="button" class="w3-text-white">°C, m/s</button>
-          <button type="button" class="w3-text-white">°F, mph</button>
+          <button
+            type="button"
+            title="Metric system"
+            class="w3-text-white ${this.isMetricActive ? 'active-btn' : ''}"
+            @click=${(): void => {
+              (this as unknown as LitMain).isMetric = true;
+              this.isMetricActive = (this as unknown as LitMain).isMetric;
+              (this as unknown as LitMain).switchSystem(
+                (this as unknown as LitMain).isMetric
+              );
+            }}>
+            °C, m/s
+          </button>
+          <button
+            type="button"
+            title="Imperial system"
+            class="w3-text-white ${this.isMetricActive ? '' : 'active-btn'}"
+            @click=${(): void => {
+              (this as unknown as LitMain).isMetric = false;
+              this.isMetricActive = (this as unknown as LitMain).isMetric;
+              (this as unknown as LitMain).switchSystem(
+                (this as unknown as LitMain).isMetric
+              );
+            }}>
+            °F, mph
+          </button>
         </div>
       </header>
     `;
@@ -84,7 +114,9 @@ export class LitControls extends LitElement {
       align-items: center;
       justify-content: flex-start;
       font-weight: 400;
+      margin-top: 0.25rem;
       gap: 1rem;
+
       & form {
         display: flex;
         gap: 0.25rem;
@@ -158,11 +190,10 @@ export class LitControls extends LitElement {
           outline: 2px solid var(--bg-secondary);
           transition: outline-color var(--transition);
           cursor: pointer;
+        }
 
-          &:hover,
-          &:focus-visible {
-            outline: 2px solid white !important;
-          }
+        .active-btn {
+          outline: 2px solid white !important;
         }
       }
     }

@@ -25,6 +25,9 @@ const searchLocation = async <T>(location: string): Promise<T | undefined> => {
       `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${API_KEY}`,
       { mode: 'cors' }
     );
+
+    if (!response.ok) throw new Error(response.status.toString());
+
     const weather = (await response.json()) as Promise<T>;
     return weather;
   } catch (error: unknown) {
