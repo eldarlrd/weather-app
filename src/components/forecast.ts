@@ -14,7 +14,7 @@ export class LitForecast extends LitElement {
 
   public static styles = css`
     ::selection {
-      background-color: #0ea5e9;
+      background-color: var(--bg-primary);
     }
   `;
 }

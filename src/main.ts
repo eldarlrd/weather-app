@@ -18,7 +18,14 @@
  * along with Weather App. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { addSeconds, format, fromUnixTime } from 'date-fns';
+import {
+  addSeconds,
+  format,
+  fromUnixTime,
+  isAfter,
+  isBefore,
+  set
+} from 'date-fns';
 import { type TemplateResult, LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -142,6 +149,10 @@ export class LitMain extends LitElement {
   @property({ type: String })
   accessor distanceFormat!: string;
 
+  // Dark Mode
+  @property({ type: Boolean })
+  accessor isDaytime = true;
+
   protected render(): TemplateResult {
     return html`
       ${stylesheet}
@@ -150,7 +161,15 @@ export class LitMain extends LitElement {
         .isMetric=${this.isMetric}
         .switchSystem=${(e: boolean): void => {
           this.switchSystem(e);
-        }}></lit-controls>
+        }}>
+        <img
+          src="${this.isDaytime ? 'favicon.png' : 'src/assets/moonCloud.png'}"
+          alt="A ${this.isDaytime ? 'sun' : 'moon'} behind a cloud"
+          width="128"
+          height="128"
+          style="${this.isDaytime ? '' : 'scale: 1.15'}"
+          class="w3-center w3-xlarge" />
+      </lit-controls>
       ${this.isLoading && this.isFound
         ? html`<svg
             width="24"
@@ -380,6 +399,7 @@ export class LitMain extends LitElement {
         timezone + new Date().getTimezoneOffset() * 60
       );
     }
+    this.checkMode();
     this.windFeel();
     this.isLoading = false;
   };
@@ -391,6 +411,52 @@ export class LitMain extends LitElement {
         return;
       }
   };
+
+  public checkMode(): void {
+    const sixAM = set(this.currTime, { hours: 6 });
+    const sixPM = set(this.currTime, { hours: 18 });
+
+    const isAfterAM = isAfter(this.currTime, sixAM);
+    const isBeforePM = isBefore(this.currTime, sixPM);
+
+    this.isDaytime = isAfterAM && isBeforePM ? true : false;
+
+    const dayPrimary = '#0ea5e9'; // tw-sky-500
+    const nightPrimary = '#0369a1'; // tw-sky-700
+    const daySecondary = '#80cdf6';
+    const nightSecondary = '#5596cc';
+    const dayAccent = '#f9ae00';
+    const nightAccent = '#ffd93b';
+    const dayBg = "url('src/assets/dayTime.avif')";
+    const nightBg = "url('src/assets/nightTime.avif')";
+
+    const rootStyles = document.documentElement.style;
+    rootStyles.setProperty(
+      '--bg-primary',
+      this.isDaytime ? dayPrimary : nightPrimary
+    );
+    rootStyles.setProperty(
+      '--bg-secondary',
+      this.isDaytime ? daySecondary : nightSecondary
+    );
+    rootStyles.setProperty(
+      '--bg-accent',
+      this.isDaytime ? dayAccent : nightAccent
+    );
+    rootStyles.setProperty(
+      'background-image',
+      this.isDaytime ? dayBg : nightBg
+    );
+
+    const dayOpaqueBg = '#0ea5e980';
+    const nightOpaqueBg = '#0369a180';
+
+    const bodyStyles = document.body.style;
+    bodyStyles.setProperty(
+      'background-color',
+      this.isDaytime ? dayOpaqueBg : nightOpaqueBg
+    );
+  }
 
   public firstUpdated(): void {
     if (localStorage.isMetric) {
@@ -447,7 +513,7 @@ export class LitMain extends LitElement {
 
   public static styles = css`
     ::selection {
-      background-color: #0ea5e9;
+      background-color: var(--bg-primary);
     }
 
     :host {

@@ -14,6 +14,8 @@ import { stylesheet } from '@/styles.ts';
 export class LitControls extends LitElement {
   @property({ type: String })
   accessor locationData = '';
+  @property({ type: String })
+  accessor prevLocationData!: string;
 
   @property({ type: Boolean })
   accessor isMetricActive = localStorage.isMetric === 'true' ? true : false;
@@ -25,12 +27,7 @@ export class LitControls extends LitElement {
     return html`
       ${stylesheet}
       <header class="w3-text-white w3-padding-16">
-        <img
-          src="favicon.png"
-          alt="A sun behind a cloud"
-          width="128"
-          height="128" />
-
+        <slot></slot>
         <form method="get">
           <input
             title=""
@@ -64,7 +61,12 @@ export class LitControls extends LitElement {
             @click=${(e: Event): Promise<void> | undefined => {
               e.preventDefault();
               if (this.locationData !== '')
-                return (this as unknown as LitMain).apiCall(this.locationData);
+                if (this.locationData !== this.prevLocationData) {
+                  this.prevLocationData = this.locationData;
+                  return (this as unknown as LitMain).apiCall(
+                    this.locationData
+                  );
+                }
             }}
             class="w3-text-white">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -190,6 +192,11 @@ export class LitControls extends LitElement {
           outline: 2px solid var(--bg-secondary);
           transition: outline-color var(--transition);
           cursor: pointer;
+
+          &:hover,
+          &:focus-visible {
+            outline: 2px solid white !important;
+          }
         }
 
         .active-btn {
