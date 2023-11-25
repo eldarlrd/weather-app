@@ -9,7 +9,7 @@
   "display": "standalone",
   "orientation": "natural",
   "theme_color": "#7dd3fc",
-  "background_color": "#7dd3fc",
+  "background_color": "#0ea5e9",
   "description": "A Weather app",
   "start_url": "https://eldarlrd.github.io/weather-app/",
   "icons": [
