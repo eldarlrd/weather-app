@@ -40,6 +40,9 @@ import {
   searchForecast,
   searchLocation
 } from '@/api.ts';
+import dayTime from '@/assets/dayTime.avif';
+import moonCloud from '@/assets/moonCloud.png';
+import nightTime from '@/assets/nightTime.avif';
 import { type LitControls } from '@/components/controls.ts';
 import { type LitCurrent } from '@/components/current.ts';
 import { type LitFooter } from '@/components/footer.ts';
@@ -187,7 +190,7 @@ export class LitMain extends LitElement {
           this.switchSystem(e);
         }}>
         <img
-          src="${this.isDaytime ? 'favicon.png' : 'src/assets/moonCloud.png'}"
+          src="${this.isDaytime ? 'favicon.png' : moonCloud}"
           alt="A ${this.isDaytime ? 'sun' : 'moon'} behind a cloud by kosonicon"
           width="128"
           height="128"
@@ -536,13 +539,13 @@ export class LitMain extends LitElement {
     const dayPrimary = '#0ea5e9'; // tw-sky-500
     const daySecondary = '#7dd3fc'; // tw-sky-300
     const dayAccent = '#f59e0b'; // tw-amber-500
-    const dayBg = "url('src/assets/dayTime.avif')";
+    const dayBg = `url(${dayTime})`;
     const dayOpaqueBg = '#0ea5e980';
 
     const nightPrimary = '#1e293b'; // tw-slate-800
     const nightSecondary = '#475569'; // tw-slate-600
     const nightAccent = '#eab308'; // tw-yellow-500
-    const nightBg = "url('src/assets/nightTime.avif')";
+    const nightBg = `url(${nightTime})`;
     const nightOpaqueBg = '#1e293b80';
 
     const rootStyles = document.documentElement.style;

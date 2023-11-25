@@ -1,4 +1,4 @@
-const API_KEY = 'e17c2086750c8698ff3eb48625a77d14';
+const API_KEY = import.meta.env.VITE_API_KEY as string;
 
 // OpenWeather API - Current data by location
 const requestCurrLocation = async <T>(
