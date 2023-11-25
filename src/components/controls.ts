@@ -172,6 +172,7 @@ export class LitControls extends LitElement {
         }
 
         & #submit {
+          -webkit-tap-highlight-color: transparent;
           border: 0;
           user-select: none;
           border-radius: 0 2rem 2rem 0;
@@ -198,6 +199,7 @@ export class LitControls extends LitElement {
         gap: 0.75rem;
 
         & button {
+          -webkit-tap-highlight-color: transparent;
           border: 0;
           user-select: none;
           border-radius: 2rem;
