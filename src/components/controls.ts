@@ -18,7 +18,7 @@ export class LitControls extends LitElement {
   accessor prevLocationData!: string;
 
   @property({ type: Boolean })
-  accessor isMetricActive = localStorage.isMetric === 'true' ? true : false;
+  accessor isMetricActive = localStorage.isMetric === 'false' ? false : true;
 
   @query('input')
   _input!: HTMLInputElement;
@@ -124,6 +124,11 @@ export class LitControls extends LitElement {
         gap: 0.25rem;
         border-radius: 2rem;
 
+        & i {
+          filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
+            drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+        }
+
         &:hover #clear,
         &:focus-within #clear {
           visibility: visible;
@@ -134,8 +139,12 @@ export class LitControls extends LitElement {
           border-radius: 2rem 0 0 2rem;
           background-color: var(--bg-secondary);
           outline: 2px solid var(--bg-secondary);
+          outline-offset: -1px;
           transition: outline-color var(--transition);
           padding: 0.5rem 2rem 0.5rem 1rem;
+          box-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 0.1),
+            0 1px 2px -1px rgb(0 0 0 / 0.1);
 
           &:hover,
           &:focus-visible {
@@ -167,10 +176,15 @@ export class LitControls extends LitElement {
           user-select: none;
           border-radius: 0 2rem 2rem 0;
           padding: 0.5rem 0.75rem;
+          margin-left: -2px;
           background-color: var(--bg-accent);
           outline: 2px solid var(--bg-accent);
+          outline-offset: -1px;
           transition: outline-color var(--transition);
           cursor: pointer;
+          box-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 0.1),
+            0 1px 2px -1px rgb(0 0 0 / 0.1);
 
           &:hover,
           &:focus-visible {
@@ -190,8 +204,12 @@ export class LitControls extends LitElement {
           padding: 0.5rem 0.75rem;
           background-color: var(--bg-secondary);
           outline: 2px solid var(--bg-secondary);
+          outline-offset: -1px;
           transition: outline-color var(--transition);
           cursor: pointer;
+          box-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 0.1),
+            0 1px 2px -1px rgb(0 0 0 / 0.1);
 
           &:hover,
           &:focus-visible {

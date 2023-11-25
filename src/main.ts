@@ -34,17 +34,17 @@ import '@/components/current.ts';
 import '@/components/forecast.ts';
 import '@/components/footer.ts';
 
-import { requestCurrLocation, searchLocation } from '@/api.ts';
+import {
+  requestCurrForecast,
+  requestCurrLocation,
+  searchForecast,
+  searchLocation
+} from '@/api.ts';
 import { type LitControls } from '@/components/controls.ts';
 import { type LitCurrent } from '@/components/current.ts';
 import { type LitFooter } from '@/components/footer.ts';
 import { type LitForecast } from '@/components/forecast.ts';
 import { stylesheet } from '@/styles.ts';
-
-// interface Coordinates {
-//   lat: number;
-//   lon: number;
-// }
 
 interface CurrentWeatherAPI {
   clouds: { all: number };
@@ -55,6 +55,26 @@ interface CurrentWeatherAPI {
   sys: { country: string; sunrise: number; sunset: number };
   name: string;
   timezone: number;
+}
+
+interface ForecastWeatherAPI {
+  dt: number;
+  main: { temp: number; feels_like: number; humidity: number };
+  wind: { speed: number; deg: number };
+  weather: { description: string; icon: string }[];
+}
+
+interface ForecastList {
+  list: ForecastWeatherAPI[];
+}
+
+interface ForecastClean {
+  dayOfWeek: Date;
+  forecastTemp: number;
+  forecastFeel: number;
+  forecastWindSpeed: number;
+  forecastWindDeg: number;
+  forecastIcon: string;
 }
 
 // d for Day, n for Night
@@ -133,11 +153,15 @@ export class LitMain extends LitElement {
   accessor currTime!: Date; // h
 
   @property({ type: Boolean })
-  accessor isMetric = localStorage.isMetric === 'true' ? true : false;
+  accessor isMetric = localStorage.isMetric === 'false' ? false : true;
   @property({ type: Boolean })
   accessor isLoading!: boolean;
   @property({ type: Boolean })
   accessor isFound!: boolean;
+
+  // Forecast Weather
+  @property({ type: Array })
+  accessor forecastData: ForecastClean[] = [];
 
   // Measurement System
   @property({ type: String })
@@ -164,12 +188,13 @@ export class LitMain extends LitElement {
         }}>
         <img
           src="${this.isDaytime ? 'favicon.png' : 'src/assets/moonCloud.png'}"
-          alt="A ${this.isDaytime ? 'sun' : 'moon'} behind a cloud"
+          alt="A ${this.isDaytime ? 'sun' : 'moon'} behind a cloud by kosonicon"
           width="128"
           height="128"
           style="${this.isDaytime ? '' : 'scale: 1.15'}"
           class="w3-center w3-xlarge" />
       </lit-controls>
+
       ${this.isLoading && this.isFound
         ? html`<svg
             width="24"
@@ -320,10 +345,61 @@ export class LitMain extends LitElement {
             </span>
           </div>
         </span>
-        <!-- Rain Chance -->
-        <!-- Moon Phase -->
       </lit-current>
-      <lit-forecast></lit-forecast>
+
+      <lit-forecast>
+        ${this.forecastData.length > 0
+          ? this.forecastData.map(
+              (day: ForecastClean) =>
+                html`<div class="forecast-list-elem">
+                  <h4 class="forecast-day">${format(day.dayOfWeek, 'EEEE')}</h4>
+
+                  <span class="forecast-temp" title="Temperature">
+                    <i class="fa-solid ${WEATHER_ICONS[day.forecastIcon]}"></i>
+                    <h4>
+                      ${day.forecastTemp !== undefined &&
+                      !isNaN(day.forecastTemp)
+                        ? Math.round(
+                            this.isMetric
+                              ? day.forecastTemp - 273
+                              : (day.forecastTemp - 273) * 1.8 + 32
+                          ) + this.temperatureFormat
+                        : nothing}
+                    </h4>
+                  </span>
+
+                  <h4
+                    title="Feels like"
+                    class="forecast-feel w3-text-light-gray">
+                    ${day.forecastFeel !== undefined && !isNaN(day.forecastFeel)
+                      ? Math.round(
+                          this.isMetric
+                            ? day.forecastFeel - 273
+                            : (day.forecastFeel - 273) * 1.8 + 32
+                        ) + this.temperatureFormat
+                      : nothing}
+                  </h4>
+
+                  <h4 class="forecast-wind" title="Wind speed">
+                    ${day.forecastWindDeg !== undefined
+                      ? html`<i
+                          style="rotate: ${day.forecastWindDeg.toString() +
+                          'deg'}"
+                          class="fa-solid fa-arrow-down"></i>`
+                      : nothing}
+                    ${day.forecastWindSpeed !== undefined
+                      ? Math.round(
+                          this.isMetric
+                            ? day.forecastWindSpeed
+                            : day.forecastWindSpeed * 2.24
+                        ) + this.speedFormat
+                      : nothing}
+                  </h4>
+                </div>`
+            )
+          : nothing}
+      </lit-forecast>
+
       <lit-footer></lit-footer>
     `;
   }
@@ -356,13 +432,21 @@ export class LitMain extends LitElement {
     this.sunset = undefined as unknown as Date;
     this.currTime = undefined as unknown as Date;
 
+    if (this.forecastData) this.forecastData.length = 0;
+
     this.isLoading = true;
     this.isFound = true;
 
     let response: unknown;
-    if (lat && lon) response = await requestCurrLocation(lat, lon);
-    else if (locationData) response = await searchLocation(locationData);
-    if (!response) {
+    let forecast: unknown;
+    if (lat && lon) {
+      response = await requestCurrLocation(lat, lon);
+      forecast = await requestCurrForecast(lat, lon);
+    } else if (locationData) {
+      response = await searchLocation(locationData);
+      forecast = await searchForecast(locationData);
+    }
+    if (!response || !forecast) {
       this.isFound = false;
       return;
     }
@@ -399,6 +483,34 @@ export class LitMain extends LitElement {
         timezone + new Date().getTimezoneOffset() * 60
       );
     }
+
+    const { list } = forecast as ForecastList;
+    const selectedDays = list.filter((_, i) => (i + 1) % 8 === 0);
+
+    for (const day of selectedDays) {
+      const dayOfWeek = addSeconds(
+        fromUnixTime(day.dt),
+        new Date().getTimezoneOffset() * 60
+      );
+
+      const forecastTemp = Math.round(day.main?.temp);
+      const forecastFeel = Math.round(day.main?.feels_like);
+
+      const forecastWindSpeed = day.wind?.speed;
+      const forecastWindDeg = day.wind?.deg;
+
+      const forecastIcon = day.weather[0].icon;
+      const cleanDay = {
+        dayOfWeek,
+        forecastTemp,
+        forecastFeel,
+        forecastWindSpeed,
+        forecastWindDeg,
+        forecastIcon
+      };
+      this.forecastData.push(cleanDay);
+    }
+
     this.checkMode();
     this.windFeel();
     this.isLoading = false;
@@ -422,13 +534,16 @@ export class LitMain extends LitElement {
     this.isDaytime = isAfterAM && isBeforePM ? true : false;
 
     const dayPrimary = '#0ea5e9'; // tw-sky-500
-    const nightPrimary = '#0369a1'; // tw-sky-700
-    const daySecondary = '#80cdf6';
-    const nightSecondary = '#5596cc';
-    const dayAccent = '#f9ae00';
-    const nightAccent = '#ffd93b';
+    const daySecondary = '#7dd3fc'; // tw-sky-300
+    const dayAccent = '#f59e0b'; // tw-amber-500
     const dayBg = "url('src/assets/dayTime.avif')";
+    const dayOpaqueBg = '#0ea5e980';
+
+    const nightPrimary = '#1e293b'; // tw-slate-800
+    const nightSecondary = '#475569'; // tw-slate-600
+    const nightAccent = '#eab308'; // tw-yellow-500
     const nightBg = "url('src/assets/nightTime.avif')";
+    const nightOpaqueBg = '#1e293b80';
 
     const rootStyles = document.documentElement.style;
     rootStyles.setProperty(
@@ -447,9 +562,6 @@ export class LitMain extends LitElement {
       'background-image',
       this.isDaytime ? dayBg : nightBg
     );
-
-    const dayOpaqueBg = '#0ea5e980';
-    const nightOpaqueBg = '#0369a180';
 
     const bodyStyles = document.body.style;
     bodyStyles.setProperty(
@@ -477,7 +589,7 @@ export class LitMain extends LitElement {
         })
         .catch((error: GeolocationPositionError) => {
           console.log(`${error.message} -> Setting a default location.`);
-          return this.apiCall('Baku');
+          return this.apiCall('Baku, Azerbaijan');
         });
     }
   }
@@ -526,12 +638,20 @@ export class LitMain extends LitElement {
       font-weight: 300;
     }
 
+    img {
+      filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.05));
+    }
+
     h1,
     h2,
     h3,
-    h4 {
+    h4,
+    p,
+    i {
       font-family: 'Signika', sans-serif;
       word-break: break-word;
+      filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
+        drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
     }
 
     svg {
@@ -544,13 +664,6 @@ export class LitMain extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    @media (min-width: 64rem) {
-      #weather-container {
-        flex-direction: row;
-        gap: 2rem;
-      }
     }
 
     #current-weather {
@@ -599,6 +712,72 @@ export class LitMain extends LitElement {
           display: inherit;
           align-items: center;
           gap: 0.5rem;
+        }
+      }
+    }
+
+    .forecast-list-elem {
+      display: grid;
+      grid-template-rows: auto auto;
+      grid-template-columns: auto auto;
+      gap: 0 4rem;
+      place-items: center;
+      grid-template-areas:
+        'item1 item4'
+        'item2 item3';
+
+      .forecast-day {
+        grid-area: item1;
+        font-weight: 600;
+      }
+
+      .forecast-temp {
+        grid-area: item2;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        & i {
+          filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
+            drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+        }
+      }
+
+      .forecast-feel {
+        grid-area: item3;
+      }
+
+      .forecast-wind {
+        grid-area: item4;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        & i {
+          filter: drop-shadow(0 0 0 rgb(0 0 0)) !important;
+        }
+      }
+    }
+
+    .forecast-list-elem:not(:last-child) {
+      border-bottom: 2px solid white;
+    }
+
+    @media (min-width: 48rem) {
+      #weather-container {
+        flex-direction: row;
+        gap: 2rem;
+      }
+
+      .forecast-list-elem {
+        grid-template-rows: 1fr;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-areas: 'item1 item2 item3 item4';
+        place-items: normal;
+        gap: 0 4rem;
+
+        & > * {
+          flex-basis: auto;
         }
       }
     }
