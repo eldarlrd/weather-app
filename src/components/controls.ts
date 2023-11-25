@@ -158,6 +158,7 @@ export class LitControls extends LitElement {
         }
 
         & #clear {
+          -webkit-tap-highlight-color: transparent;
           visibility: hidden;
           position: relative;
           border: 0;
