@@ -1,0 +1,23 @@
+{
+  "name": "Weather App",
+  "short_name": "Weather",
+  "dir": "ltr",
+  "lang": "en",
+  "categories": [
+    "weather"
+  ],
+  "display": "standalone",
+  "orientation": "natural",
+  "theme_color": "#0ea5e9",
+  "background_color": "#0ea5e9",
+  "description": "A Weather app",
+  "start_url": "https://eldarlrd.github.io/weather-app/",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
