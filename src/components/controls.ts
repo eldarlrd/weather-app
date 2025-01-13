@@ -77,7 +77,7 @@ export class LitControls extends LitElement {
         <div>
           <button
             type="button"
-            title="Metric system"
+            title="Metric"
             class="w3-text-white ${this.isMetricActive ? 'active-btn' : ''}"
             @click=${(): void => {
               (this as unknown as LitMain).isMetric = true;
@@ -90,7 +90,7 @@ export class LitControls extends LitElement {
           </button>
           <button
             type="button"
-            title="Imperial system"
+            title="Imperial"
             class="w3-text-white ${this.isMetricActive ? '' : 'active-btn'}"
             @click=${(): void => {
               (this as unknown as LitMain).isMetric = false;

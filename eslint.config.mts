@@ -43,6 +43,7 @@ export default tseslint.config({
   plugins: { 'no-relative-import-paths': noRelativeImportPaths },
   rules: {
     '@typescript-eslint/no-unused-vars': 2,
+    '@typescript-eslint/no-unnecessary-condition': 0,
     '@typescript-eslint/explicit-member-accessibility': 2,
     '@typescript-eslint/explicit-function-return-type': 2,
     '@typescript-eslint/consistent-type-imports': [2, { fixStyle: 'inline-type-imports' }],
@@ -63,8 +64,6 @@ export default tseslint.config({
       { blankLine: 'always', prev: '*', next: 'return' },
       { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
       { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] }],
-    eqeqeq: 2,
-    '@typescript-eslint/no-unnecessary-condition': 0,
-    '@typescript-eslint/use-unknown-in-catch-callback-variable': 0
+    eqeqeq: 2
   }
 }) satisfies FlatConfig.ConfigArray;

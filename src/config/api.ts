@@ -26,8 +26,7 @@ const requestCurrLocation = async (
 
     return weather.data;
   } catch (error: unknown) {
-    if (error instanceof Error)
-      console.log({ name: error.name, message: error.message });
+    if (error instanceof Error) console.error(error);
   }
 };
 
@@ -53,8 +52,7 @@ const requestCurrForecast = async (
 
     return weather.data;
   } catch (error: unknown) {
-    if (error instanceof Error)
-      console.log({ name: error.name, message: error.message });
+    if (error instanceof Error) console.error(error);
   }
 };
 
@@ -79,8 +77,7 @@ const searchLocation = async (
 
     return weather.data;
   } catch (error: unknown) {
-    if (error instanceof Error)
-      console.log({ name: error.name, message: error.message });
+    if (error instanceof Error) console.error(error);
   }
 };
 
@@ -105,8 +102,7 @@ const searchForecast = async (
 
     return weather.data;
   } catch (error: unknown) {
-    if (error instanceof Error)
-      console.log({ name: error.name, message: error.message });
+    if (error instanceof Error) console.error(error);
   }
 };
 

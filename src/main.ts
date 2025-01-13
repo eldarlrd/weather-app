@@ -212,7 +212,7 @@ export class LitMain extends LitElement {
             <span>
               <i class="fa-solid ${WEATHER_ICONS[this.weatherIcon]}"></i>
               <p>
-                ${this.mainTemp !== undefined && !isNaN(this.mainTemp)
+                ${this.mainTemp
                   ? Math.round(
                       this.isMetric
                         ? this.mainTemp - 273
@@ -229,7 +229,7 @@ export class LitMain extends LitElement {
                   : nothing}
               </h3>
               <h4 class="w3-text-light-gray">
-                ${this.mainFeel !== undefined && !isNaN(this.mainFeel)
+                ${this.mainFeel
                   ? 'Feels like ' +
                     Math.round(
                       this.isMetric
@@ -240,7 +240,7 @@ export class LitMain extends LitElement {
                   : nothing}
               </h4>
               <h4 class="w3-text-light-gray">
-                ${this.windSpeed !== undefined ? this.windFeelText : nothing}
+                ${this.windSpeed ? this.windFeelText : nothing}
               </h4>
             </div>
           </div>
@@ -248,15 +248,15 @@ export class LitMain extends LitElement {
           <div id="detailed-weather">
             <span>
               <h4 class="w3-text-light-gray">
-                ${this.windSpeed !== undefined ? 'Wind' : nothing}
+                ${this.windSpeed ? 'Wind' : nothing}
               </h4>
               <h3>
-                ${this.windDeg !== undefined
+                ${this.windDeg
                   ? html`<i
                       style="rotate: ${this.windDeg.toString() + 'deg'}"
                       class="fa-solid fa-arrow-down"></i>`
                   : nothing}
-                ${this.windSpeed !== undefined
+                ${this.windSpeed
                   ? Math.round(
                       this.isMetric ? this.windSpeed : this.windSpeed * 2.24
                     ).toString() + this.speedFormat
@@ -266,10 +266,10 @@ export class LitMain extends LitElement {
 
             <span>
               <h4 class="w3-text-light-gray">
-                ${this.mainHumidity !== undefined ? 'Humidity' : nothing}
+                ${this.mainHumidity ? 'Humidity' : nothing}
               </h4>
               <h3>
-                ${this.mainHumidity !== undefined
+                ${this.mainHumidity
                   ? this.mainHumidity.toString() + '%'
                   : nothing}
               </h3>
@@ -277,12 +277,10 @@ export class LitMain extends LitElement {
 
             <span>
               <h4 class="w3-text-light-gray">
-                ${this.visibility !== undefined && !isNaN(this.visibility)
-                  ? 'Visibility'
-                  : nothing}
+                ${this.visibility ? 'Visibility' : nothing}
               </h4>
               <h3>
-                ${this.visibility !== undefined && !isNaN(this.visibility)
+                ${this.visibility
                   ? Math.round(
                       this.isMetric ? this.visibility : this.visibility * 0.62
                     ).toString() + this.distanceFormat
@@ -292,13 +290,9 @@ export class LitMain extends LitElement {
 
             <span>
               <h4 class="w3-text-light-gray">
-                ${this.clouds !== undefined ? 'Cloudiness' : nothing}
+                ${this.clouds ? 'Cloudiness' : nothing}
               </h4>
-              <h3>
-                ${this.clouds !== undefined
-                  ? this.clouds.toString() + '%'
-                  : nothing}
-              </h3>
+              <h3>${this.clouds ? this.clouds.toString() + '%' : nothing}</h3>
             </span>
 
             <span>
@@ -334,8 +328,7 @@ export class LitMain extends LitElement {
                   <span class="forecast-temp" title="Temperature">
                     <i class="fa-solid ${WEATHER_ICONS[day.forecastIcon]}"></i>
                     <h4>
-                      ${day.forecastTemp !== undefined &&
-                      !isNaN(day.forecastTemp)
+                      ${day.forecastTemp
                         ? Math.round(
                             this.isMetric
                               ? day.forecastTemp - 273
@@ -348,7 +341,7 @@ export class LitMain extends LitElement {
                   <h4
                     title="Feels like"
                     class="forecast-feel w3-text-light-gray">
-                    ${day.forecastFeel !== undefined && !isNaN(day.forecastFeel)
+                    ${day.forecastFeel
                       ? Math.round(
                           this.isMetric
                             ? day.forecastFeel - 273
@@ -358,13 +351,13 @@ export class LitMain extends LitElement {
                   </h4>
 
                   <h4 class="forecast-wind" title="Wind speed">
-                    ${day.forecastWindDeg !== undefined
+                    ${day.forecastWindDeg
                       ? html`<i
                           style="rotate: ${day.forecastWindDeg.toString() +
                           'deg'}"
                           class="fa-solid fa-arrow-down"></i>`
                       : nothing}
-                    ${day.forecastWindSpeed !== undefined
+                    ${day.forecastWindSpeed
                       ? Math.round(
                           this.isMetric
                             ? day.forecastWindSpeed
@@ -409,7 +402,7 @@ export class LitMain extends LitElement {
     this.sunset = undefined as unknown as Date;
     this.currTime = undefined as unknown as Date;
 
-    if (this.forecastData) this.forecastData.length = 0;
+    this.forecastData.length = 0;
 
     this.isLoading = true;
     this.isFound = true;
@@ -442,25 +435,24 @@ export class LitMain extends LitElement {
     this.windSpeed = wind.speed;
     this.windDeg = wind.deg;
 
-    if (weather) {
-      this.weatherDesc = weather[0].description;
-      this.weatherIcon = weather[0].icon;
-    }
+    this.weatherDesc = weather[0].description;
+    this.weatherIcon = weather[0].icon;
 
     this.city = name;
-    let country: string | undefined;
+    const country: string | undefined = regionNamesInEnglish.of(sys.country);
 
-    if (sys) country = regionNamesInEnglish.of(sys.country);
     if (country) this.country = country;
-    if (timezone !== undefined) {
+    if (timezone) {
       this.sunrise = addSeconds(
         fromUnixTime(sys.sunrise),
         timezone + new Date().getTimezoneOffset() * 60
       );
+
       this.sunset = addSeconds(
         fromUnixTime(sys.sunset),
         timezone + new Date().getTimezoneOffset() * 60
       );
+
       this.currTime = addSeconds(
         new Date(),
         timezone + new Date().getTimezoneOffset() * 60
@@ -512,9 +504,6 @@ export class LitMain extends LitElement {
   public checkMode(): void {
     const isAfterAM = isAfter(this.currTime, this.sunrise);
     const isBeforePM = isBefore(this.currTime, this.sunset);
-
-    console.log(this.sunrise);
-    console.log(this.sunset);
 
     this.isDaytime = isAfterAM && isBeforePM ? true : false;
 
@@ -568,20 +557,19 @@ export class LitMain extends LitElement {
 
     this.switchFormat(this.isMetric);
 
-    if (navigator.geolocation) {
-      this.getCurrentPosition()
-        .then((position: GeolocationPosition) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
+    this.getCurrentPosition()
+      .then((position: GeolocationPosition) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
 
-          return this.apiCall('', lat, lon);
-        })
-        .catch((error: GeolocationPositionError) => {
+        return this.apiCall('', lat, lon);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof GeolocationPositionError)
           console.log(`${error.message} -> Setting a default location...`);
 
-          return this.apiCall('Baku, Azerbaijan');
-        });
-    }
+        return this.apiCall('Baku, Azerbaijan');
+      });
   }
 
   private getCurrentPosition(): Promise<GeolocationPosition> {
