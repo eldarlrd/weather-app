@@ -13,7 +13,7 @@ import { stylesheet } from '@/styles.ts';
 @customElement('lit-controls')
 export class LitControls extends LitElement {
   @property({ type: String })
-  accessor locationData = '';
+  private locationData = '';
   @property({ type: String })
   accessor prevLocationData!: string;
 
@@ -21,7 +21,7 @@ export class LitControls extends LitElement {
   accessor isMetricActive = localStorage.isMetric === 'false' ? false : true;
 
   @query('input')
-  _input!: HTMLInputElement;
+  private _input!: HTMLInputElement;
 
   protected render(): TemplateResult {
     return html`
@@ -63,6 +63,7 @@ export class LitControls extends LitElement {
               if (this.locationData !== '')
                 if (this.locationData !== this.prevLocationData) {
                   this.prevLocationData = this.locationData;
+
                   return (this as unknown as LitMain).apiCall(
                     this.locationData
                   );
@@ -111,17 +112,17 @@ export class LitControls extends LitElement {
     }
 
     header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      font-weight: 400;
-      margin-top: 0.25rem;
       gap: 1rem;
+      display: flex;
+      font-weight: 400;
+      align-items: center;
+      margin-top: 0.25rem;
+      flex-direction: column;
+      justify-content: flex-start;
 
       & form {
-        display: flex;
         gap: 0.25rem;
+        display: flex;
         border-radius: 2rem;
 
         & i {
@@ -136,12 +137,12 @@ export class LitControls extends LitElement {
 
         & input {
           border: 0;
+          outline-offset: -1px;
           border-radius: 2rem 0 0 2rem;
+          padding: 0.5rem 2rem 0.5rem 1rem;
           background-color: var(--bg-secondary);
           outline: 2px solid var(--bg-secondary);
-          outline-offset: -1px;
           transition: outline-color var(--transition);
-          padding: 0.5rem 2rem 0.5rem 1rem;
           box-shadow:
             0 1px 3px 0 rgb(0 0 0 / 0.1),
             0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -158,32 +159,32 @@ export class LitControls extends LitElement {
         }
 
         & #clear {
-          -webkit-tap-highlight-color: transparent;
-          visibility: hidden;
-          position: relative;
           border: 0;
-          user-select: none;
-          border-radius: 2rem;
-          padding: 0.25rem;
-          background-color: transparent;
+          right: 6px;
           outline: none;
           cursor: pointer;
+          padding: 0.25rem;
+          user-select: none;
+          visibility: hidden;
+          position: relative;
+          border-radius: 2rem;
           margin-left: -1.5rem;
-          right: 6px;
+          background-color: transparent;
+          -webkit-tap-highlight-color: transparent;
         }
 
         & #submit {
-          -webkit-tap-highlight-color: transparent;
           border: 0;
-          user-select: none;
-          border-radius: 0 2rem 2rem 0;
-          padding: 0.5rem 0.75rem;
+          cursor: pointer;
           margin-left: -2px;
+          user-select: none;
+          outline-offset: -1px;
+          padding: 0.5rem 0.75rem;
+          border-radius: 0 2rem 2rem 0;
           background-color: var(--bg-accent);
           outline: 2px solid var(--bg-accent);
-          outline-offset: -1px;
+          -webkit-tap-highlight-color: transparent;
           transition: outline-color var(--transition);
-          cursor: pointer;
           box-shadow:
             0 1px 3px 0 rgb(0 0 0 / 0.1),
             0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -196,18 +197,18 @@ export class LitControls extends LitElement {
       }
 
       & div {
-        display: flex;
         gap: 0.75rem;
+        display: flex;
 
         & button {
-          -webkit-tap-highlight-color: transparent;
           border: 0;
           user-select: none;
           border-radius: 2rem;
+          outline-offset: -1px;
           padding: 0.5rem 0.75rem;
           background-color: var(--bg-secondary);
           outline: 2px solid var(--bg-secondary);
-          outline-offset: -1px;
+          -webkit-tap-highlight-color: transparent;
           transition: outline-color var(--transition);
           cursor: pointer;
           box-shadow:

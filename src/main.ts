@@ -1,7 +1,7 @@
 /**
  * @license AGPL-3.0-only
  * Weather App - A Weather app
- * Copyright (C) 2023 Eldar Pashazade <eldarlrd@pm.me>
+ * Copyright (C) 2023-2025 Eldar Pashazade <eldarlrd@pm.me>
  *
  * This file is part of Weather App.
  *
@@ -18,14 +18,7 @@
  * along with Weather App. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {
-  addSeconds,
-  format,
-  fromUnixTime,
-  isAfter,
-  isBefore,
-  set
-} from 'date-fns';
+import { addSeconds, format, fromUnixTime, isAfter, isBefore } from 'date-fns';
 import { type TemplateResult, LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -34,42 +27,21 @@ import '@/components/current.ts';
 import '@/components/forecast.ts';
 import '@/components/footer.ts';
 
+import day from '@/assets/day.avif';
+import moon from '@/assets/moon.png';
+import night from '@/assets/night.avif';
+import { type LitControls } from '@/components/controls.ts';
+import { type LitCurrent } from '@/components/current.ts';
+import { type LitFooter } from '@/components/footer.ts';
+import { type LitForecast } from '@/components/forecast.ts';
 import {
   requestCurrForecast,
   requestCurrLocation,
   searchForecast,
   searchLocation
-} from '@/api.ts';
-import dayTime from '@/assets/dayTime.avif';
-import moonCloud from '@/assets/moonCloud.png';
-import nightTime from '@/assets/nightTime.avif';
-import { type LitControls } from '@/components/controls.ts';
-import { type LitCurrent } from '@/components/current.ts';
-import { type LitFooter } from '@/components/footer.ts';
-import { type LitForecast } from '@/components/forecast.ts';
+} from '@/config/api.ts';
+import { type SchemaProps } from '@/config/schemas.ts';
 import { stylesheet } from '@/styles.ts';
-
-interface CurrentWeatherAPI {
-  clouds: { all: number };
-  main: { temp: number; feels_like: number; humidity: number };
-  visibility: number;
-  wind: { speed: number; deg: number };
-  weather: { description: string; icon: string }[];
-  sys: { country: string; sunrise: number; sunset: number };
-  name: string;
-  timezone: number;
-}
-
-interface ForecastWeatherAPI {
-  dt: number;
-  main: { temp: number; feels_like: number; humidity: number };
-  wind: { speed: number; deg: number };
-  weather: { description: string; icon: string }[];
-}
-
-interface ForecastList {
-  list: ForecastWeatherAPI[];
-}
 
 interface ForecastClean {
   dayOfWeek: Date;
@@ -190,7 +162,7 @@ export class LitMain extends LitElement {
           this.switchSystem(e);
         }}>
         <img
-          src="${this.isDaytime ? 'favicon.png' : moonCloud}"
+          src="${this.isDaytime ? 'favicon.png' : moon}"
           alt="A ${this.isDaytime ? 'sun' : 'moon'} behind a cloud by kosonicon"
           width="128"
           height="128"
@@ -245,7 +217,7 @@ export class LitMain extends LitElement {
                       this.isMetric
                         ? this.mainTemp - 273
                         : (this.mainTemp - 273) * 1.8 + 32
-                    ) + this.temperatureFormat
+                    ).toString() + this.temperatureFormat
                   : nothing}
               </p>
             </span>
@@ -263,7 +235,7 @@ export class LitMain extends LitElement {
                       this.isMetric
                         ? this.mainFeel - 273
                         : (this.mainFeel - 273) * 1.8 + 32
-                    ) +
+                    ).toString() +
                     this.temperatureFormat
                   : nothing}
               </h4>
@@ -287,7 +259,7 @@ export class LitMain extends LitElement {
                 ${this.windSpeed !== undefined
                   ? Math.round(
                       this.isMetric ? this.windSpeed : this.windSpeed * 2.24
-                    ) + this.speedFormat
+                    ).toString() + this.speedFormat
                   : nothing}
               </h3>
             </span>
@@ -298,7 +270,7 @@ export class LitMain extends LitElement {
               </h4>
               <h3>
                 ${this.mainHumidity !== undefined
-                  ? this.mainHumidity + '%'
+                  ? this.mainHumidity.toString() + '%'
                   : nothing}
               </h3>
             </span>
@@ -313,7 +285,7 @@ export class LitMain extends LitElement {
                 ${this.visibility !== undefined && !isNaN(this.visibility)
                   ? Math.round(
                       this.isMetric ? this.visibility : this.visibility * 0.62
-                    ) + this.distanceFormat
+                    ).toString() + this.distanceFormat
                   : nothing}
               </h3>
             </span>
@@ -323,7 +295,9 @@ export class LitMain extends LitElement {
                 ${this.clouds !== undefined ? 'Cloudiness' : nothing}
               </h4>
               <h3>
-                ${this.clouds !== undefined ? this.clouds + '%' : nothing}
+                ${this.clouds !== undefined
+                  ? this.clouds.toString() + '%'
+                  : nothing}
               </h3>
             </span>
 
@@ -366,7 +340,7 @@ export class LitMain extends LitElement {
                             this.isMetric
                               ? day.forecastTemp - 273
                               : (day.forecastTemp - 273) * 1.8 + 32
-                          ) + this.temperatureFormat
+                          ).toString() + this.temperatureFormat
                         : nothing}
                     </h4>
                   </span>
@@ -379,7 +353,7 @@ export class LitMain extends LitElement {
                           this.isMetric
                             ? day.forecastFeel - 273
                             : (day.forecastFeel - 273) * 1.8 + 32
-                        ) + this.temperatureFormat
+                        ).toString() + this.temperatureFormat
                       : nothing}
                   </h4>
 
@@ -395,7 +369,7 @@ export class LitMain extends LitElement {
                           this.isMetric
                             ? day.forecastWindSpeed
                             : day.forecastWindSpeed * 2.24
-                        ) + this.speedFormat
+                        ).toString() + this.speedFormat
                       : nothing}
                   </h4>
                 </div>`
@@ -442,6 +416,7 @@ export class LitMain extends LitElement {
 
     let response: unknown;
     let forecast: unknown;
+
     if (lat && lon) {
       response = await requestCurrLocation(lat, lon);
       forecast = await requestCurrForecast(lat, lon);
@@ -449,19 +424,23 @@ export class LitMain extends LitElement {
       response = await searchLocation(locationData);
       forecast = await searchForecast(locationData);
     }
+
     if (!response || !forecast) {
       this.isFound = false;
+
       return;
     }
+
     const { clouds, weather, main, visibility, wind, sys, timezone, name } =
-      response as CurrentWeatherAPI;
-    this.clouds = clouds?.all;
-    this.mainTemp = Math.round(main?.temp);
-    this.mainFeel = Math.round(main?.feels_like);
-    this.mainHumidity = main?.humidity;
+      response as SchemaProps['currentWeatherAPI'];
+
+    this.clouds = clouds.all;
+    this.mainTemp = Math.round(main.temp);
+    this.mainFeel = Math.round(main.feels_like);
+    this.mainHumidity = main.humidity;
     this.visibility = visibility / 1000;
-    this.windSpeed = wind?.speed;
-    this.windDeg = wind?.deg;
+    this.windSpeed = wind.speed;
+    this.windDeg = wind.deg;
 
     if (weather) {
       this.weatherDesc = weather[0].description;
@@ -470,15 +449,16 @@ export class LitMain extends LitElement {
 
     this.city = name;
     let country: string | undefined;
+
     if (sys) country = regionNamesInEnglish.of(sys.country);
     if (country) this.country = country;
     if (timezone !== undefined) {
       this.sunrise = addSeconds(
-        fromUnixTime(sys?.sunrise),
+        fromUnixTime(sys.sunrise),
         timezone + new Date().getTimezoneOffset() * 60
       );
       this.sunset = addSeconds(
-        fromUnixTime(sys?.sunset),
+        fromUnixTime(sys.sunset),
         timezone + new Date().getTimezoneOffset() * 60
       );
       this.currTime = addSeconds(
@@ -487,7 +467,7 @@ export class LitMain extends LitElement {
       );
     }
 
-    const { list } = forecast as ForecastList;
+    const { list } = forecast as SchemaProps['forecastWeatherList'];
     const selectedDays = list.filter((_, i) => (i + 1) % 8 === 0);
 
     for (const day of selectedDays) {
@@ -496,11 +476,11 @@ export class LitMain extends LitElement {
         new Date().getTimezoneOffset() * 60
       );
 
-      const forecastTemp = Math.round(day.main?.temp);
-      const forecastFeel = Math.round(day.main?.feels_like);
+      const forecastTemp = Math.round(day.main.temp);
+      const forecastFeel = Math.round(day.main.feels_like);
 
-      const forecastWindSpeed = day.wind?.speed;
-      const forecastWindDeg = day.wind?.deg;
+      const forecastWindSpeed = day.wind.speed;
+      const forecastWindDeg = day.wind.deg;
 
       const forecastIcon = day.weather[0].icon;
       const cleanDay = {
@@ -511,6 +491,7 @@ export class LitMain extends LitElement {
         forecastWindDeg,
         forecastIcon
       };
+
       this.forecastData.push(cleanDay);
     }
 
@@ -523,32 +504,34 @@ export class LitMain extends LitElement {
     for (const arr of WIND_FEEL_ARRAY)
       if (this.windSpeed < arr.maxSpeed) {
         this.windFeelText = arr.description;
+
         return;
       }
   };
 
   public checkMode(): void {
-    const sixAM = set(this.currTime, { hours: 6 });
-    const sixPM = set(this.currTime, { hours: 18 });
+    const isAfterAM = isAfter(this.currTime, this.sunrise);
+    const isBeforePM = isBefore(this.currTime, this.sunset);
 
-    const isAfterAM = isAfter(this.currTime, sixAM);
-    const isBeforePM = isBefore(this.currTime, sixPM);
+    console.log(this.sunrise);
+    console.log(this.sunset);
 
     this.isDaytime = isAfterAM && isBeforePM ? true : false;
 
     const dayPrimary = '#0ea5e9'; // tw-sky-500
     const daySecondary = '#7dd3fc'; // tw-sky-300
     const dayAccent = '#f59e0b'; // tw-amber-500
-    const dayBg = `url(${dayTime})`;
+    const dayBg = `url(${day})`;
     const dayOpaqueBg = '#0ea5e980';
 
     const nightPrimary = '#1e293b'; // tw-slate-800
     const nightSecondary = '#475569'; // tw-slate-600
     const nightAccent = '#eab308'; // tw-yellow-500
-    const nightBg = `url(${nightTime})`;
+    const nightBg = `url(${night})`;
     const nightOpaqueBg = '#1e293b80';
 
     const rootStyles = document.documentElement.style;
+
     rootStyles.setProperty(
       '--bg-primary',
       this.isDaytime ? dayPrimary : nightPrimary
@@ -567,6 +550,7 @@ export class LitMain extends LitElement {
     );
 
     const bodyStyles = document.body.style;
+
     bodyStyles.setProperty(
       'background-color',
       this.isDaytime ? dayOpaqueBg : nightOpaqueBg
@@ -576,6 +560,7 @@ export class LitMain extends LitElement {
   public firstUpdated(): void {
     if (localStorage.isMetric) {
       const storedMetric = localStorage.getItem('isMetric');
+
       this.isMetric = storedMetric
         ? (JSON.parse(storedMetric) as boolean)
         : true;
@@ -588,10 +573,12 @@ export class LitMain extends LitElement {
         .then((position: GeolocationPosition) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
+
           return this.apiCall('', lat, lon);
         })
         .catch((error: GeolocationPositionError) => {
-          console.log(`${error.message} -> Setting a default location.`);
+          console.log(`${error.message} -> Setting a default location...`);
+
           return this.apiCall('Baku, Azerbaijan');
         });
     }
@@ -611,7 +598,7 @@ export class LitMain extends LitElement {
   public switchFormat(isMetric: boolean): void {
     if (isMetric) {
       this.isMetric = isMetric;
-      this.hourFormat = 'H:MM';
+      this.hourFormat = 'H:mm';
       this.temperatureFormat = ' °C';
       this.speedFormat = ' m/s';
       this.distanceFormat = ' km';
@@ -632,13 +619,13 @@ export class LitMain extends LitElement {
     }
 
     :host {
-      min-height: 100svh;
       display: flex;
+      font-weight: 300;
+      min-height: 100dvh;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
       font-family: 'Signika', sans-serif;
-      font-weight: 300;
     }
 
     img {
@@ -651,45 +638,45 @@ export class LitMain extends LitElement {
     h4,
     p,
     i {
-      font-family: 'Signika', sans-serif;
       word-break: break-word;
+      font-family: 'Signika', sans-serif;
       filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
         drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
     }
 
     svg {
-      padding-top: 1.25rem;
-      z-index: -1;
       scale: 4;
+      z-index: -1;
+      padding-top: 1.25rem;
     }
 
     #weather-container {
       display: flex;
-      flex-direction: column;
       align-items: center;
+      flex-direction: column;
     }
 
     #current-weather {
       display: flex;
-      flex-direction: column;
-      align-items: center;
       margin-top: -1rem;
+      align-items: center;
+      flex-direction: column;
 
       & span {
-        display: inherit;
-        justify-content: center;
-        align-items: center;
         gap: 1rem;
         font-size: 4rem;
+        display: inherit;
         line-height: 1rem;
+        align-items: center;
+        justify-content: center;
         margin-bottom: -1.5rem;
       }
 
       & div {
         display: inherit;
+        width: fit-content;
         flex-direction: column;
         justify-content: center;
-        width: fit-content;
 
         & h4 {
           margin-top: -0.5rem;
@@ -698,33 +685,33 @@ export class LitMain extends LitElement {
     }
 
     #detailed-weather {
-      margin-top: 0.5rem;
       display: grid;
+      gap: 1rem 4rem;
+      width: fit-content;
+      margin-top: 0.5rem;
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: repeat(3, auto);
-      width: fit-content;
-      gap: 1rem 4rem;
 
       & span {
         display: flex;
-        flex-direction: column;
         align-items: center;
+        flex-direction: column;
 
         & h3 {
+          gap: 0.5rem;
           margin-top: -2px;
           display: inherit;
           align-items: center;
-          gap: 0.5rem;
         }
       }
     }
 
     .forecast-list-elem {
+      gap: 0 4rem;
       display: grid;
+      place-items: center;
       grid-template-rows: auto auto;
       grid-template-columns: auto auto;
-      gap: 0 4rem;
-      place-items: center;
       grid-template-areas:
         'item1 item4'
         'item2 item3';
@@ -735,10 +722,10 @@ export class LitMain extends LitElement {
       }
 
       .forecast-temp {
-        grid-area: item2;
-        display: flex;
-        align-items: center;
         gap: 0.5rem;
+        display: flex;
+        grid-area: item2;
+        align-items: center;
 
         & i {
           filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
@@ -751,10 +738,10 @@ export class LitMain extends LitElement {
       }
 
       .forecast-wind {
-        grid-area: item4;
-        display: flex;
-        align-items: center;
         gap: 0.5rem;
+        display: flex;
+        grid-area: item4;
+        align-items: center;
 
         & i {
           filter: drop-shadow(0 0 0 rgb(0 0 0)) !important;
@@ -773,11 +760,11 @@ export class LitMain extends LitElement {
       }
 
       .forecast-list-elem {
+        gap: 0 4rem;
+        place-items: normal;
         grid-template-rows: 1fr;
         grid-template-columns: repeat(4, 1fr);
         grid-template-areas: 'item1 item2 item3 item4';
-        place-items: normal;
-        gap: 0 4rem;
 
         & > * {
           flex-basis: auto;
@@ -796,6 +783,21 @@ declare global {
     'lit-footer': LitFooter;
   }
 }
+
+const registerSW = (): void => {
+  if ('serviceWorker' in navigator)
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/weather-app/sw.js', {
+          scope: '/weather-app/'
+        })
+        .catch((error: unknown) => {
+          if (error instanceof Error) console.error(error);
+        });
+    });
+};
+
+registerSW();
 
 // Easter Egg
 console.log(

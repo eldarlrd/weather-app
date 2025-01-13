@@ -9,12 +9,12 @@ export class LitFooter extends LitElement {
     return html`
       ${stylesheet}
       <footer class="w3-text-white w3-large w3-padding-32">
-        © 2023
+        © 2023 - 2025
         <a
-          title="Go to the Source"
+          title="Source"
           target="_blank"
           type="text/html"
-          rel="noopener noreferrer nofollow external author"
+          rel="noreferrer external author"
           href="https://github.com/eldarlrd/weather-app">
           <i class="fa-brands fa-github"></i>
           eldarlrd

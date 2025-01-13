@@ -21,9 +21,9 @@ export class LitCurrent extends LitElement {
 
     main {
       display: flex;
+      align-items: center;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
     }
   `;
 }

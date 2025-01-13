@@ -23,20 +23,20 @@ export class LitForecast extends LitElement {
 
     section {
       display: flex;
+      align-items: center;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
     }
 
     section > div {
+      gap: 0.5rem;
       display: grid;
-      align-items: center;
-      justify-content: center;
-      grid-template-rows: repeat(5, 1fr);
-      grid-template-columns: 1fr;
       width: fit-content;
       place-self: center;
-      gap: 0.5rem;
+      align-items: center;
+      justify-content: center;
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(5, 1fr);
     }
   `;
 }
