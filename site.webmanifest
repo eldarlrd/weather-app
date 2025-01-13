@@ -6,7 +6,7 @@
   "categories": [
     "weather"
   ],
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "natural",
   "theme_color": "#7dd3fc",
   "background_color": "#0ea5e9",
