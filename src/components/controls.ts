@@ -13,9 +13,11 @@ import { stylesheet } from '@/styles.ts';
 @customElement('lit-controls')
 export class LitControls extends LitElement {
   @property({ type: String })
-  private locationData = '';
+  private _urlParams = new URLSearchParams(window.location.search);
   @property({ type: String })
-  accessor prevLocationData!: string;
+  accessor locationData = this._urlParams.get('search') ?? '';
+  @property({ type: String })
+  accessor prevLocationData = this.locationData;
 
   @property({ type: Boolean })
   accessor isMetricActive = localStorage.isMetric === 'false' ? false : true;
@@ -34,8 +36,21 @@ export class LitControls extends LitElement {
             type="text"
             name="search"
             minlength="1"
-            @input=${(e: Event): string =>
-              (this.locationData = (e.target as HTMLInputElement).value)}
+            @input=${(e: Event): string => {
+              this.locationData = (e.target as HTMLInputElement).value;
+
+              if (this.locationData)
+                this._urlParams.set('search', this.locationData);
+              else this._urlParams.delete('search');
+
+              window.history.replaceState(
+                {},
+                '',
+                `${window.location.pathname}?${this._urlParams}`
+              );
+
+              return this.locationData;
+            }}
             value=${this.locationData}
             placeholder="Search"
             class="w3-text-white" />
@@ -48,6 +63,13 @@ export class LitControls extends LitElement {
                 @click=${(): void => {
                   this.locationData = '';
                   this._input.value = '';
+
+                  this._urlParams.delete('search');
+                  window.history.replaceState(
+                    {},
+                    '',
+                    `${window.location.pathname}?${this._urlParams}`
+                  );
                 }}
                 class="w3-text-white">
                 <i class="fa-solid fa-x"></i>
@@ -60,7 +82,7 @@ export class LitControls extends LitElement {
             title="Search"
             @click=${(e: Event): Promise<void> | undefined => {
               e.preventDefault();
-              if (this.locationData !== '')
+              if (this.locationData)
                 if (this.locationData !== this.prevLocationData) {
                   this.prevLocationData = this.locationData;
 

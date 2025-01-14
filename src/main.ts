@@ -193,7 +193,9 @@ export class LitMain extends LitElement {
               fill="white" />
           </svg>`
         : !this.isFound
-          ? html`<h2 class="w3-center w3-text-white">Location not found</h2>`
+          ? html`<h2 id="error" class="w3-center w3-text-white">
+              Location not found
+            </h2>`
           : nothing}
 
       <lit-current>
@@ -557,19 +559,23 @@ export class LitMain extends LitElement {
 
     this.switchFormat(this.isMetric);
 
-    this.getCurrentPosition()
-      .then((position: GeolocationPosition) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
+    const _search = new URLSearchParams(window.location.search).get('search');
 
-        return this.apiCall('', lat, lon);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof GeolocationPositionError)
-          console.log(`${error.message} -> Setting a default location...`);
+    if (_search) void this.apiCall(_search);
+    else
+      this.getCurrentPosition()
+        .then((position: GeolocationPosition) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
 
-        return this.apiCall('Baku, Azerbaijan');
-      });
+          return this.apiCall('', lat, lon);
+        })
+        .catch((error: unknown) => {
+          if (error instanceof GeolocationPositionError)
+            console.log(`${error.message} -> Setting a default location...`);
+
+          return this.apiCall('Baku, Azerbaijan');
+        });
   }
 
   private getCurrentPosition(): Promise<GeolocationPosition> {
@@ -636,6 +642,10 @@ export class LitMain extends LitElement {
       scale: 4;
       z-index: -1;
       padding-top: 1.25rem;
+    }
+
+    #error {
+      user-select: none;
     }
 
     #weather-container {
