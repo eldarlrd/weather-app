@@ -1,56 +1,46 @@
 {
-  "name": "weather-app",
-  "private": true,
-  "version": "1.1.1",
-  "type": "module",
-  "keywords": [
-    "weather"
-  ],
-  "description": "A Weather app",
-  "repository": "github:eldarlrd/weather-app",
-  "homepage": "https://eldarlrd.github.io/weather-app",
-  "author": "Eldar Pashazade <eldarlrd@pm.me> (https://eldarlrd.github.io)",
-  "license": "AGPL-3.0-only",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "deployer": "pnpm build && gh-pages -b deploy -m 'build(prod): deployment' -d dist",
-    "lint": "eslint src",
-    "pretty": "prettier '{src,__{tests,mocks,snapshots}__}/**/*.{ts,tsx}' --write",
-    "format": "pnpm lint --fix && pnpm pretty"
-  },
-  "prettier": {
-    "singleQuote": true,
-    "jsxSingleQuote": true,
-    "bracketSameLine": true,
-    "trailingComma": "none",
-    "arrowParens": "avoid"
-  },
-  "dependencies": {
-    "date-fns": "^4.1.0",
-    "lit": "^3.2.1",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.18.0",
-    "eslint": "^9.18.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-import-resolver-typescript": "^3.7.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-lit": "^1.15.0",
-    "eslint-plugin-n": "^17.15.1",
-    "eslint-plugin-no-relative-import-paths": "^1.6.1",
-    "eslint-plugin-promise": "^7.2.1",
-    "eslint-plugin-wc": "^2.2.0",
-    "gh-pages": "^6.3.0",
-    "jiti": "^2.4.2",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0",
-    "vite": "^6.0.7",
-    "vite-plugin-pwa": "^0.21.1",
-    "workbox-core": "^7.3.0",
-    "workbox-precaching": "^7.3.0"
-  }
+	"name": "weather-app",
+	"private": true,
+	"version": "1.2.0",
+	"type": "module",
+	"keywords": [
+		"weather"
+	],
+	"description": "A Weather app",
+	"repository": "github:eldarlrd/weather-app",
+	"homepage": "https://eldarlrd.is-a.dev/weather-app",
+	"author": "Eldar Paşazadə <eldarlrd@pm.me> (https://eldarlrd.is-a.dev)",
+	"license": "AGPL-3.0-only",
+	"scripts": {
+		"dev": "vite --open",
+		"bundle": "tsc -b && vite build",
+		"serve": "vite preview",
+		"deployer": "pnpm build && gh-pages -b deploy -m 'build(prod): deployment' -d dist",
+		"fix": "biome check --fix --unsafe --no-errors-on-unmatched --reporter=concise",
+		"orphans": "knip --cache --no-exit-code"
+	},
+	"commitlint": {
+		"extends": [
+			"@commitlint/config-conventional"
+		]
+	},
+	"dependencies": {
+		"date-fns": "^4.4.0",
+		"lit": "^3.3.3",
+		"zod": "^4.6.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.13",
+		"@commitlint/cli": "^21.2.2",
+		"@commitlint/config-conventional": "^21.2.2",
+		"@types/bun": "1.4.2",
+		"gh-pages": "^6.3.0",
+		"typescript": "^7.0.2",
+		"knip": "^6.35.1",
+		"lefthook": "^2.1.12",
+		"vite": "^8.3.0",
+		"vite-plugin-pwa": "^1.3.0",
+		"workbox-core": "^7.4.1",
+		"workbox-precaching": "^7.4.1"
+	}
 }

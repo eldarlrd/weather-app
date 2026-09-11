@@ -1,7 +1,7 @@
-import { type TemplateResult, LitElement, html, css, nothing } from 'lit';
+import { LitElement, type TemplateResult, css, html, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
-import { type LitMain } from '@/main.ts';
+import type { LitMain } from '@/main.ts';
 import { stylesheet } from '@/styles.ts';
 
 /**
@@ -12,18 +12,16 @@ import { stylesheet } from '@/styles.ts';
  */
 @customElement('lit-controls')
 export class LitControls extends LitElement {
-  @property({ type: String })
-  private _urlParams = new URLSearchParams(window.location.search);
+  @property({ type: Boolean })
+  accessor isMetricActive = localStorage.isMetric !== 'false';
   @property({ type: String })
   accessor locationData = this._urlParams.get('search') ?? '';
   @property({ type: String })
   accessor prevLocationData = this.locationData;
-
-  @property({ type: Boolean })
-  accessor isMetricActive = localStorage.isMetric === 'false' ? false : true;
-
+  @property({ type: String })
+  private readonly _urlParams = new URLSearchParams(globalThis.location.search);
   @query('input')
-  private _input!: HTMLInputElement;
+  private readonly _input!: HTMLInputElement;
 
   protected render(): TemplateResult {
     return html`
@@ -39,14 +37,13 @@ export class LitControls extends LitElement {
             @input=${(e: Event): string => {
               this.locationData = (e.target as HTMLInputElement).value;
 
-              if (this.locationData)
-                this._urlParams.set('search', this.locationData);
+              if (this.locationData) this._urlParams.set('search', this.locationData);
               else this._urlParams.delete('search');
 
-              window.history.replaceState(
+              globalThis.history.replaceState(
                 {},
                 '',
-                `${window.location.pathname}?${this._urlParams}`
+                `${globalThis.location.pathname}?${this._urlParams}`
               );
 
               return this.locationData;
@@ -54,8 +51,9 @@ export class LitControls extends LitElement {
             value=${this.locationData}
             placeholder="Search"
             class="w3-text-white" />
-          ${this.locationData
-            ? html`<button
+          ${
+            this.locationData
+              ? html`<button
                 id="clear"
                 type="button"
                 title="Clear"
@@ -65,16 +63,17 @@ export class LitControls extends LitElement {
                   this._input.value = '';
 
                   this._urlParams.delete('search');
-                  window.history.replaceState(
+                  globalThis.history.replaceState(
                     {},
                     '',
-                    `${window.location.pathname}?${this._urlParams}`
+                    `${globalThis.location.pathname}?${this._urlParams}`
                   );
                 }}
                 class="w3-text-white">
                 <i class="fa-solid fa-x"></i>
               </button>`
-            : nothing}
+              : nothing
+          }
 
           <button
             id="submit"
@@ -82,14 +81,11 @@ export class LitControls extends LitElement {
             title="Search"
             @click=${(e: Event): Promise<void> | undefined => {
               e.preventDefault();
-              if (this.locationData)
-                if (this.locationData !== this.prevLocationData) {
-                  this.prevLocationData = this.locationData;
+              if (this.locationData && this.locationData !== this.prevLocationData) {
+                this.prevLocationData = this.locationData;
 
-                  return (this as unknown as LitMain).apiCall(
-                    this.locationData
-                  );
-                }
+                return (this as unknown as LitMain).apiCall(this.locationData);
+              }
             }}
             class="w3-text-white">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -104,9 +100,7 @@ export class LitControls extends LitElement {
             @click=${(): void => {
               (this as unknown as LitMain).isMetric = true;
               this.isMetricActive = (this as unknown as LitMain).isMetric;
-              (this as unknown as LitMain).switchSystem(
-                (this as unknown as LitMain).isMetric
-              );
+              (this as unknown as LitMain).switchSystem((this as unknown as LitMain).isMetric);
             }}>
             °C, m/s
           </button>
@@ -117,9 +111,7 @@ export class LitControls extends LitElement {
             @click=${(): void => {
               (this as unknown as LitMain).isMetric = false;
               this.isMetricActive = (this as unknown as LitMain).isMetric;
-              (this as unknown as LitMain).switchSystem(
-                (this as unknown as LitMain).isMetric
-              );
+              (this as unknown as LitMain).switchSystem((this as unknown as LitMain).isMetric);
             }}>
             °F, mph
           </button>

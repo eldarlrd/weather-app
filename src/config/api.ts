@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
 
-import { type SchemaProps, SCHEMAS } from '@/config/schemas.ts';
+import { SCHEMAS, type SchemaProps } from '%/schemas.ts';
 
 const API_KEY = import.meta.env.VITE_API_KEY as string;
 
@@ -21,7 +21,7 @@ const requestCurrLocation = async (
 
     if (!weather.success) {
       console.error(weather.error);
-      throw new ZodError(weather.error.errors);
+      throw new ZodError(weather.error.issues);
     }
 
     return weather.data;
@@ -47,7 +47,7 @@ const requestCurrForecast = async (
 
     if (!weather.success) {
       console.error(weather.error);
-      throw new ZodError(weather.error.errors);
+      throw new ZodError(weather.error.issues);
     }
 
     return weather.data;
@@ -72,7 +72,7 @@ const searchLocation = async (
 
     if (!weather.success) {
       console.error(weather.error);
-      throw new ZodError(weather.error.errors);
+      throw new ZodError(weather.error.issues);
     }
 
     return weather.data;
@@ -97,7 +97,7 @@ const searchForecast = async (
 
     if (!weather.success) {
       console.error(weather.error);
-      throw new ZodError(weather.error.errors);
+      throw new ZodError(weather.error.issues);
     }
 
     return weather.data;
@@ -106,9 +106,4 @@ const searchForecast = async (
   }
 };
 
-export {
-  requestCurrLocation,
-  requestCurrForecast,
-  searchLocation,
-  searchForecast
-};
+export { requestCurrForecast, requestCurrLocation, searchForecast, searchLocation };

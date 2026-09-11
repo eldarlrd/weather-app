@@ -1,51 +1,51 @@
-import { type z, number, string, object, type ZodType } from 'zod';
+import { type ZodType, number, object, string, type z } from 'zod';
 
 const currentWeatherAPI = object({
   clouds: object({
-    all: number()
+    all: number(),
   }),
   main: object({
-    temp: number(),
     feels_like: number(),
-    humidity: number()
+    humidity: number(),
+    temp: number(),
   }),
-  visibility: number(),
-  wind: object({
-    speed: number(),
-    deg: number()
-  }),
-  weather: object({
-    description: string(),
-    icon: string()
-  }).array(),
+  name: string(),
   sys: object({
     country: string(),
     sunrise: number(),
-    sunset: number()
+    sunset: number(),
   }),
-  name: string(),
-  timezone: number()
+  timezone: number(),
+  visibility: number(),
+  weather: object({
+    description: string(),
+    icon: string(),
+  }).array(),
+  wind: object({
+    deg: number(),
+    speed: number(),
+  }),
 });
 
 const forecastWeatherAPI = object({
   dt: number(),
   main: object({
-    temp: number(),
     feels_like: number(),
-    humidity: number()
-  }),
-  wind: object({
-    speed: number(),
-    deg: number()
+    humidity: number(),
+    temp: number(),
   }),
   weather: object({
     description: string(),
-    icon: string()
-  }).array()
+    icon: string(),
+  }).array(),
+  wind: object({
+    deg: number(),
+    speed: number(),
+  }),
 }).array();
 
 const forecastWeatherList = object({
-  list: forecastWeatherAPI
+  list: forecastWeatherAPI,
 });
 
 interface SchemaProps {
@@ -55,7 +55,7 @@ interface SchemaProps {
 
 const SCHEMAS: { [K in keyof SchemaProps]: ZodType<SchemaProps[K]> } = {
   currentWeatherAPI,
-  forecastWeatherList
+  forecastWeatherList,
 };
 
-export { type SchemaProps, SCHEMAS };
+export { SCHEMAS, type SchemaProps };

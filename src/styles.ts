@@ -4,7 +4,7 @@ export const stylesheet = html`
   <link
     rel="stylesheet"
     type="text/css"
-    href="https://w3schools.com/w3css/4/w3.css" />
+    href="https://w3schools.com/w3css/5/w3.css" />
   <link
     rel="stylesheet"
     type="text/css"

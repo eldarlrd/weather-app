@@ -1,15 +1,20 @@
-import { type TemplateResult, LitElement, html, css } from 'lit';
+import { LitElement, type TemplateResult, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { stylesheet } from '@/styles.ts';
 
 @customElement('lit-footer')
 export class LitFooter extends LitElement {
+  private readonly _stylesheet = stylesheet;
+
   protected render(): TemplateResult {
-    return html`
-      ${stylesheet}
+    return this.renderTemplate();
+  }
+
+  private readonly renderTemplate = (): TemplateResult => html`
+      ${this._stylesheet}
       <footer class="w3-text-white w3-large w3-padding-32">
-        © 2023 - 2025
+        © 2023 - 2026
         <a
           title="Source"
           target="_blank"
@@ -21,7 +26,6 @@ export class LitFooter extends LitElement {
         </a>
       </footer>
     `;
-  }
 
   public static styles = css`
     :focus-visible {

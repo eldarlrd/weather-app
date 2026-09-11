@@ -1,23 +1,21 @@
 {
-  "name": "Weather App",
-  "short_name": "Weather",
-  "dir": "ltr",
-  "lang": "en",
-  "categories": [
-    "weather"
-  ],
-  "display": "fullscreen",
-  "orientation": "natural",
-  "theme_color": "#7dd3fc",
-  "background_color": "#ffffff",
-  "description": "A Weather app",
-  "start_url": "https://eldarlrd.github.io/weather-app/",
-  "icons": [
-    {
-      "src": "favicon.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any"
-    }
-  ]
+	"name": "Weather App",
+	"short_name": "Weather",
+	"dir": "ltr",
+	"lang": "en",
+	"categories": ["weather"],
+	"display": "fullscreen",
+	"orientation": "natural",
+	"theme_color": "#0ea5e9",
+	"background_color": "#7dd3fc",
+	"description": "A Weather app",
+	"start_url": "https://eldarlrd.is-a.dev/weather-app/",
+	"icons": [
+		{
+			"src": "favicon.png",
+			"type": "image/png",
+			"sizes": "512x512",
+			"purpose": "any"
+		}
+	]
 }
