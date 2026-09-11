@@ -14,12 +14,11 @@ import { stylesheet } from '@/styles.ts';
 export class LitControls extends LitElement {
   @property({ type: Boolean })
   accessor isMetricActive = localStorage.isMetric !== 'false';
+  private readonly _urlParams = new URLSearchParams(globalThis.location.search);
   @property({ type: String })
   accessor locationData = this._urlParams.get('search') ?? '';
   @property({ type: String })
   accessor prevLocationData = this.locationData;
-  @property({ type: String })
-  private readonly _urlParams = new URLSearchParams(globalThis.location.search);
   @query('input')
   private readonly _input!: HTMLInputElement;
 

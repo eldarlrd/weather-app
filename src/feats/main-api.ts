@@ -8,30 +8,41 @@ import type { SchemaProps } from '%/schemas.ts';
 const FORECAST_INTERVAL = 8;
 const METERS_PER_KILOMETER = 1000;
 const SECONDS_PER_MINUTE = 60;
+const REGION_NAMES_IN_ENGLISH = new Intl.DisplayNames(['en'], { type: 'region' });
+
+type CurrentWeather = SchemaProps['currentWeatherAPI'];
+type ForecastWeather = SchemaProps['forecastWeatherList'];
+type WeatherRequests = readonly [
+  Promise<CurrentWeather | undefined>,
+  Promise<ForecastWeather | undefined>,
+];
 
 const resetWeather = (main: LitMain): void => {
-  main.clouds = undefined;
-  main.mainTemp = undefined;
-  main.mainFeel = undefined;
-  main.mainHumidity = undefined;
-  main.visibility = undefined;
-  main.windSpeed = undefined;
-  main.windDeg = undefined;
-  main.weatherDesc = undefined;
-  main.weatherIcon = undefined;
-  main.city = undefined;
-  main.country = undefined;
-  main.windFeelText = undefined;
-  main.sunrise = undefined;
-  main.sunset = undefined;
-  main.currTime = undefined;
-  main.forecastData.length = 0;
+  Object.assign(main, {
+    city: undefined,
+    clouds: undefined,
+    country: undefined,
+    currTime: undefined,
+    forecastData: [],
+    mainFeel: undefined,
+    mainHumidity: undefined,
+    mainTemp: undefined,
+    sunrise: undefined,
+    sunset: undefined,
+    visibility: undefined,
+    weatherDesc: undefined,
+    weatherIcon: undefined,
+    windDeg: undefined,
+    windFeelText: undefined,
+    windSpeed: undefined,
+  });
 };
 
-const cleanForecast = (list: SchemaProps['forecastWeatherList']['list']): ForecastClean[] => {
-  const timezoneOffset = new Date().getTimezoneOffset() * SECONDS_PER_MINUTE;
-
-  return list
+const cleanForecast = (
+  list: SchemaProps['forecastWeatherList']['list'],
+  timezoneOffset: number
+): ForecastClean[] =>
+  list
     .filter((_, index) => (index + 1) % FORECAST_INTERVAL === 0)
     .map((day) => ({
       dayOfWeek: addSeconds(fromUnixTime(day.dt), timezoneOffset),
@@ -41,6 +52,17 @@ const cleanForecast = (list: SchemaProps['forecastWeatherList']['list']): Foreca
       forecastWindDeg: day.wind.deg,
       forecastWindSpeed: day.wind.speed,
     }));
+
+const requestWeather = (
+  locationData?: string,
+  lat?: number,
+  lon?: number
+): WeatherRequests | undefined => {
+  if (lat !== undefined && lon !== undefined) {
+    return [requestCurrLocation(lat, lon), requestCurrForecast(lat, lon)];
+  }
+
+  if (locationData) return [searchLocation(locationData), searchForecast(locationData)];
 };
 
 export const loadWeather = async (
@@ -49,53 +71,49 @@ export const loadWeather = async (
   lat?: number,
   lon?: number
 ): Promise<void> => {
-  const regionNamesInEnglish = new Intl.DisplayNames(['en'], { type: 'region' });
   resetWeather(main);
   main.isLoading = true;
   main.isFound = true;
 
-  let response: unknown;
-  let forecast: unknown;
+  try {
+    const requests = requestWeather(locationData, lat, lon);
+    if (!requests) {
+      main.isFound = false;
+      return;
+    }
 
-  if (lat !== undefined && lon !== undefined) {
-    response = await requestCurrLocation(lat, lon);
-    forecast = await requestCurrForecast(lat, lon);
-  } else if (locationData) {
-    response = await searchLocation(locationData);
-    forecast = await searchForecast(locationData);
+    const [current, forecast] = await Promise.all(requests);
+    if (!(current && forecast)) {
+      main.isFound = false;
+      return;
+    }
+
+    const { clouds, weather, main: currentMain, visibility, wind, sys, timezone, name } = current;
+    const currentTime = new Date();
+    const localTimezoneOffset = currentTime.getTimezoneOffset() * SECONDS_PER_MINUTE;
+    const timezoneOffset = timezone + localTimezoneOffset;
+
+    Object.assign(main, {
+      city: name,
+      clouds: clouds.all,
+      country: REGION_NAMES_IN_ENGLISH.of(sys.country),
+      currTime: addSeconds(currentTime, timezoneOffset),
+      forecastData: cleanForecast(forecast.list, localTimezoneOffset),
+      mainFeel: Math.round(currentMain.feels_like),
+      mainHumidity: currentMain.humidity,
+      mainTemp: Math.round(currentMain.temp),
+      sunrise: addSeconds(fromUnixTime(sys.sunrise), timezoneOffset),
+      sunset: addSeconds(fromUnixTime(sys.sunset), timezoneOffset),
+      visibility: visibility / METERS_PER_KILOMETER,
+      weatherDesc: weather[0].description,
+      weatherIcon: weather[0].icon,
+      windDeg: wind.deg,
+      windSpeed: wind.speed,
+    });
+
+    main.checkMode();
+    main.windFeel();
+  } finally {
+    main.isLoading = false;
   }
-
-  if (!(response && forecast)) {
-    main.isFound = false;
-    return;
-  }
-
-  const current = response as SchemaProps['currentWeatherAPI'];
-  const { clouds, weather, main: currentMain, visibility, wind, sys, timezone, name } = current;
-  main.clouds = clouds.all;
-  main.mainTemp = Math.round(currentMain.temp);
-  main.mainFeel = Math.round(currentMain.feels_like);
-  main.mainHumidity = currentMain.humidity;
-  main.visibility = visibility / METERS_PER_KILOMETER;
-  main.windSpeed = wind.speed;
-  main.windDeg = wind.deg;
-  main.weatherDesc = weather[0].description;
-  main.weatherIcon = weather[0].icon;
-  main.city = name;
-
-  const country = regionNamesInEnglish.of(sys.country);
-  if (country) main.country = country;
-
-  if (timezone !== 0) {
-    const timezoneOffset = timezone + new Date().getTimezoneOffset() * SECONDS_PER_MINUTE;
-    main.sunrise = addSeconds(fromUnixTime(sys.sunrise), timezoneOffset);
-    main.sunset = addSeconds(fromUnixTime(sys.sunset), timezoneOffset);
-    main.currTime = addSeconds(new Date(), timezoneOffset);
-  }
-
-  const { list } = forecast as SchemaProps['forecastWeatherList'];
-  main.forecastData = cleanForecast(list);
-  main.checkMode();
-  main.windFeel();
-  main.isLoading = false;
 };
