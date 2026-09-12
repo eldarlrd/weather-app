@@ -15,7 +15,7 @@
 		"dev": "vite --open",
 		"bundle": "tsc -b && vite build",
 		"serve": "vite preview",
-		"deployer": "pnpm build && gh-pages -b deploy -m 'build(prod): deployment' -d dist",
+		"deployer": "bun bundle && gh-pages -b deploy -m 'build(prod): deployment' -d dist",
 		"fix": "biome check --fix --unsafe --no-errors-on-unmatched --reporter=concise",
 		"orphans": "knip --cache --no-exit-code"
 	},
